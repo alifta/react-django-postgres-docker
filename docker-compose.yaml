@@ -1,0 +1,43 @@
+services:
+  # Frontend service
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    ports:
+      - "5173:5173"
+    develop:
+      watch:
+        - action: sync
+          path: ./frontend
+          target: /frontend
+          ignore:
+            - node_modules
+  # Backend service
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/backend
+  # Database service
+  db:
+    image: postgres:17.2
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    ports:
+      - 5432:5432
+    environment:
+      - POSTGRES_DB=db
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=localdevpw
+    healthcheck:
+      test: [ "CMD", "pg_isready", "-q", "-d", "db", "-U", "user" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+# Volumes
+volumes:
+  db-data:
