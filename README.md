@@ -161,3 +161,11 @@ python -m venv env
 source env/bin/activate
 pip install -r requirements.txt
 ```
+
+### Add a Core APP to Django
+
+To add a core app to Django run the following:
+
+```shell
+docker compose run --rm backend sh -c "python manage.py startapp core"
+```
