@@ -1,4 +1,5 @@
 services:
+
   # Frontend service
   frontend:
     build:
@@ -13,6 +14,7 @@ services:
           target: /frontend
           ignore:
             - node_modules
+
   # Backend service
   backend:
     build:
@@ -22,6 +24,18 @@ services:
       - "8000:8000"
     volumes:
       - ./backend:/backend
+    command: >
+      sh -c "python manage.py migrate &&
+             python manage.py runserver 0.0.0.0:8000"
+    environment:
+      - DB_HOST=db
+      - DB_NAME=db
+      - DB_USER=user
+      - DB_PASSWORD=localdevpw
+    depends_on:
+      db:
+        condition: service_healthy
+
   # Database service
   db:
     image: postgres:17.2
@@ -38,6 +52,7 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+
 # Volumes
 volumes:
   db-data:
