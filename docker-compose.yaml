@@ -5,6 +5,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.frontend
+    # container_name: react_frontend
     ports:
       - "5173:5173"
     develop:
@@ -20,6 +21,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.backend
+    # container_name: django_backend
     ports:
       - "8000:8000"
     volumes:
@@ -31,7 +33,7 @@ services:
       - DB_HOST=db
       - DB_NAME=db
       - DB_USER=user
-      - DB_PASSWORD=localdevpw
+      - DB_PASS=localdevpw
     depends_on:
       db:
         condition: service_healthy
@@ -39,6 +41,7 @@ services:
   # Database service
   db:
     image: postgres:17.2
+    # container_name: postgres_db
     volumes:
       - db-data:/var/lib/postgresql/data
     ports:

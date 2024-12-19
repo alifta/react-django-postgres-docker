@@ -89,6 +89,18 @@ After installing a new package, we need to stop (control+c) and start the server
 docker compose up --watch --build
 ```
 
+However, if we want to just test our build we can use the following:
+
+```shell
+docker compose build
+```
+
+and then to run it:
+
+```shell
+docker compose up --watch
+```
+
 ## Django (Backend) Setup
 
 ### Django Requirement File
@@ -168,4 +180,26 @@ To add a core app to Django run the following:
 
 ```shell
 docker compose run --rm backend sh -c "python manage.py startapp core"
+```
+
+### Run DB Migration
+
+To run a database migration in Django in container run the following:
+
+```shell
+docker compose run --rm backend sh -c "python manage.py makemigrations"
+```
+
+### Create Admin
+
+To create an admin user for Django accessing admin portal:
+
+```shell
+docker compose run --rm backend sh -c "python manage.py createsuperuser"
+```
+
+### Connect to DB
+
+```shell
+docker compose exec db psql -U user -d db
 ```
