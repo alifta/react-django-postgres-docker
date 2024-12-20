@@ -4,7 +4,6 @@ from django.urls import reverse
 from rest_framework import status
 
 
-# Create your tests here.
 class UserOrderTestCase(TestCase):
     def setUp(self):
         user1 = User.objects.create_user(username="user1", password="test")
