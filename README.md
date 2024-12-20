@@ -188,6 +188,7 @@ To run a database migration in Django in container run the following:
 
 ```shell
 docker compose run --rm backend sh -c "python manage.py makemigrations"
+docker compose run --rm backend sh -c "python manage.py migrate"
 ```
 
 ### Create Admin
