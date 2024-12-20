@@ -3,6 +3,8 @@ from django.shortcuts import get_object_or_404
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from rest_framework import generics
+from rest_framework.permissions import IsAuthenticated
+
 
 from core.serializers import ProductSerializer, OrderSerializer, ProductInfoSerializer
 from core.models import Product, Order, OrderItem
@@ -27,6 +29,7 @@ class OrderListAPIView(generics.ListAPIView):
 class UserOrderListAPIView(generics.ListAPIView):
     queryset = Order.objects.prefetch_related("items", "items__product").all()
     serializer_class = OrderSerializer
+    permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         qs = super().get_queryset()
