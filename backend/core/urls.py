@@ -6,6 +6,7 @@ urlpatterns = [
     path("products/info/", views.product_info),
     path("products/<int:product_id>", views.ProductDetailAPIView.as_view()),
     path("orders/", views.OrderListAPIView.as_view()),
+    path("user-orders/", views.UserOrderListAPIView.as_view()),
     #
     # path("numbers/", views.display_even_numbers),
     # path("homes/", views.homes),
