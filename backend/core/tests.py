@@ -6,8 +6,12 @@ from rest_framework import status
 
 class UserOrderTestCase(TestCase):
     def setUp(self):
-        user1 = User.objects.create_user(username="user1", password="test")
-        user2 = User.objects.create_user(username="user2", password="test")
+        user1 = User.objects.create_user(
+            username="user1", email="user1@example.com", password="test"
+        )
+        user2 = User.objects.create_user(
+            username="user2", email="user2@example.com", password="test"
+        )
         Order.objects.create(user=user1)
         Order.objects.create(user=user1)
         Order.objects.create(user=user2)
@@ -24,4 +28,4 @@ class UserOrderTestCase(TestCase):
 
     def test_user_order_list_unauthenticated(self):
         response = self.client.get(reverse("user-orders"))
-        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
