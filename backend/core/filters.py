@@ -1,6 +1,12 @@
 import django_filters
 from rest_framework import filters
-from core.models import Product
+from core.models import Product, Order
+
+
+# Custom filter backend
+class InStockFilterBackend(filters.BaseFilterBackend):
+    def filter_queryset(self, request, queryset, view):
+        return queryset.filter(stock__gt=0)
 
 
 class ProductFilter(django_filters.FilterSet):
@@ -12,7 +18,12 @@ class ProductFilter(django_filters.FilterSet):
         }
 
 
-# Custom filter backend
-class InStockFilterBackend(filters.BaseFilterBackend):
-    def filter_queryset(self, request, queryset, view):
-        return queryset.filter(stock__gt=0)
+class OrderFilter(django_filters.FilterSet):
+    created_at = django_filters.DateFilter(field_name="created_at__date")
+
+    class Meta:
+        model = Order
+        fields = {
+            "status": ["exact"],
+            "created_at": ["exact", "lt", "gt"],
+        }
