@@ -3,11 +3,13 @@ from .models import Product, Order, OrderItem
 
 
 class ProductSerializer(serializers.ModelSerializer):
+    id = serializers.IntegerField(read_only=True)
+
     class Meta:
         model = Product
         # fields = "__all__"
         fields = (
-            # "id",
+            "id",
             "name",
             "description",
             "price",
@@ -38,6 +40,7 @@ class OrderItemSerializer(serializers.ModelSerializer):
 
 
 class OrderSerializer(serializers.ModelSerializer):
+    order_id = serializers.UUIDField(read_only=True)
     items = OrderItemSerializer(many=True, read_only=True)
     total_price = serializers.SerializerMethodField(method_name="total")
 

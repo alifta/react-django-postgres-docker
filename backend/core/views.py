@@ -7,6 +7,7 @@ from rest_framework.permissions import (
     AllowAny,
 )
 from rest_framework.views import APIView
+from rest_framework import viewsets
 from rest_framework.pagination import PageNumberPagination, LimitOffsetPagination
 from rest_framework import filters
 from django_filters.rest_framework import DjangoFilterBackend
@@ -17,10 +18,8 @@ from core.filters import ProductFilter, InStockFilterBackend
 
 
 class ProductListCreateAPIView(generics.ListCreateAPIView):
-    # queryset = Product.objects.all()
     queryset = Product.objects.order_by("pk")
     serializer_class = ProductSerializer
-    # filterset_fields = ["name", "price"]
     filterset_class = ProductFilter
     filter_backends = [
         DjangoFilterBackend,
@@ -55,9 +54,29 @@ class ProductDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
         return super().get_permissions()
 
 
-class OrderListAPIView(generics.ListAPIView):
+# class OrderListAPIView(generics.ListAPIView):
+#     queryset = Order.objects.prefetch_related("items", "items__product").all()
+#     serializer_class = OrderSerializer
+
+
+class OrderViewSet(viewsets.ModelViewSet):
     queryset = Order.objects.prefetch_related("items", "items__product").all()
     serializer_class = OrderSerializer
+    permission_classes = [AllowAny]
+    pagination_class = None
+
+    # def get_queryset(self):
+    #     qs = super().get_queryset()
+    #     return qs.filter(user=self.request.user)
+
+    # def perform_create(self, serializer):
+    #     serializer.save(user=self.request.user)
+
+    # def get_permissions(self):
+    #     self.permission_classes = [IsAuthenticated]
+    #     if self.action == "create":
+    #         self.permission_classes = [IsAuthenticated]
+    #     return super().get_permissions()
 
 
 class UserOrderListAPIView(generics.ListAPIView):
