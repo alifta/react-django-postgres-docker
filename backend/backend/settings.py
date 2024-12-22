@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "django_filters",
     "corsheaders",
     "rest_framework",
     "rest_framework_simplejwt",
@@ -151,6 +152,7 @@ REST_FRAMEWORK = {
         "rest_framework.authentication.SessionAuthentication",
     ],
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+    "DEFAULT_FILTER_BACKENDS": ["django_filters.rest_framework.DjangoFilterBackend"],
     # "DEFAULT_PERMISSION_CLASSES": [
     #     "rest_framework.permissions.IsAuthenticated",  # Default permission for all views
     # ],
@@ -164,4 +166,12 @@ SIMPLE_JWT = {
     "ALGORITHM": "HS256",
     "SIGNING_KEY": SECRET_KEY,  # Use a secure signing key
     "AUTH_HEADER_TYPES": ("Bearer",),  # Use "Bearer" for token prefix
+}
+
+SPECTACULAR_SETTINGS = {
+    "TITLE": "HomeInBlock",
+    "DESCRIPTION": "Interior Designing Platform",
+    "VERSION": "1.0.0",
+    "SERVE_INCLUDE_SCHEMA": False,
+    # OTHER SETTINGS
 }
