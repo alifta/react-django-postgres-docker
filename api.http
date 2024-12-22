@@ -33,13 +33,13 @@ GET http://localhost:8000/api/products/ HTTP/1.1
 
 POST http://localhost:8000/api/products/ HTTP/1.1
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzM0ODIxMzYzLCJpYXQiOjE3MzQ4MTc3NjMsImp0aSI6ImNhZjVkZTMxY2VjZTQyZWY4ZjVhYjFjNWQ4YjQxYjBjIiwidXNlcl9pZCI6MX0.li5Db2UyC0mdtpWe3fFwcoUMPm-BnHeQPtcCzRFTlA0
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzM0ODU4MjE4LCJpYXQiOjE3MzQ4NTQ2MTgsImp0aSI6IjkxYzZmYjYyMzkwMTRiNmY4MDkzZGUwMTY5ZGVkY2U0IiwidXNlcl9pZCI6MX0.0KPz2pyEMGO8dTeApBiOapSAd-V_6rALwYFd6Y8vUfY
 
 {
-  "name": "TV",
+  "name": "Product 2",
   "description": "An amazing product!",
-  "price": 300.0,
-  "stock": 15
+  "price": 199.0,
+  "stock": 5
 }
 
 ###
