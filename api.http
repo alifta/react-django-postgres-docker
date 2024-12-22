@@ -33,14 +33,47 @@ GET http://localhost:8000/api/products/ HTTP/1.1
 
 POST http://localhost:8000/api/products/ HTTP/1.1
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzM0ODAzNjI3LCJpYXQiOjE3MzQ4MDI3MjcsImp0aSI6ImViZjZjNzIwMDZlMTQ4OWU4M2UzMWRiMDhkMzA1NjkzIiwidXNlcl9pZCI6Mn0.eLHqa-kTuQmUoW1ksbTvt-ltU3KNbo3DnLrSkinAP7o
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzM0ODIxMzYzLCJpYXQiOjE3MzQ4MTc3NjMsImp0aSI6ImNhZjVkZTMxY2VjZTQyZWY4ZjVhYjFjNWQ4YjQxYjBjIiwidXNlcl9pZCI6MX0.li5Db2UyC0mdtpWe3fFwcoUMPm-BnHeQPtcCzRFTlA0
 
 {
-    "name": "TV",
-    "description": "An amazing product!",
-    "price": 300.0,
-    "stock": 15
+  "name": "TV",
+  "description": "An amazing product!",
+  "price": 300.0,
+  "stock": 15
 }
+
+###
+
+GET http://localhost:8000/api/products/9 HTTP/1.1
+
+###
+
+PUT http://localhost:8000/api/products/8 HTTP/1.1
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzM0ODIxMzYzLCJpYXQiOjE3MzQ4MTc3NjMsImp0aSI6ImNhZjVkZTMxY2VjZTQyZWY4ZjVhYjFjNWQ4YjQxYjBjIiwidXNlcl9pZCI6MX0.li5Db2UyC0mdtpWe3fFwcoUMPm-BnHeQPtcCzRFTlA0
+
+{
+  "name": "TV",
+  "description": "An amazing product!",
+  "price": "200.00",
+  "stock": 15
+}
+
+###
+
+PATCH http://localhost:8000/api/products/8 HTTP/1.1
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzM0ODIxMzYzLCJpYXQiOjE3MzQ4MTc3NjMsImp0aSI6ImNhZjVkZTMxY2VjZTQyZWY4ZjVhYjFjNWQ4YjQxYjBjIiwidXNlcl9pZCI6MX0.li5Db2UyC0mdtpWe3fFwcoUMPm-BnHeQPtcCzRFTlA0
+
+{
+  "name": "TV NEW"
+}
+
+###
+
+DELETE http://localhost:8000/api/products/8 HTTP/1.1
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzM0ODIxMzYzLCJpYXQiOjE3MzQ4MTc3NjMsImp0aSI6ImNhZjVkZTMxY2VjZTQyZWY4ZjVhYjFjNWQ4YjQxYjBjIiwidXNlcl9pZCI6MX0.li5Db2UyC0mdtpWe3fFwcoUMPm-BnHeQPtcCzRFTlA0
 
 ###
 

@@ -42,8 +42,9 @@ INSTALLED_APPS = [
     "corsheaders",
     "rest_framework",
     "rest_framework_simplejwt",
-    "silk",
     # "rest_framework_simplejwt.token_blacklist",
+    "silk",
+    "drf_spectacular",
     "core",
 ]
 
@@ -149,6 +150,7 @@ REST_FRAMEWORK = {
         "rest_framework_simplejwt.authentication.JWTAuthentication",
         "rest_framework.authentication.SessionAuthentication",
     ],
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
     # "DEFAULT_PERMISSION_CLASSES": [
     #     "rest_framework.permissions.IsAuthenticated",  # Default permission for all views
     # ],
