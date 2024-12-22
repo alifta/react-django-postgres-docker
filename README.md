@@ -1,29 +1,23 @@
 # Project Setup
 
-## React (Frontend) Setup
+## Frontend - React
 
-### React Docker
-
-Create docker container and install react on it
+1. Create docker container and install react via `Vite`:
 
 ```shell
 docker run --rm -it -v $(pwd):/code -w /code node:22.12.0 sh -c "npm create vite@latest frontend -- --template react && cd frontend/ && npm install"
 ```
 
-### Docker Ignore
+1. Create docker ignore file `.dockerignore`:
 
-Create `.dockerignore` and use the following:
-
-```
+```text
 README.md
 frontend/node_modules/
 ```
 
-### Docker File
+3. Create docker file for frontend container `Dockerfile.frontend`:
 
-Create `Dockerfile.frontend` and use the following:
-
-```
+```dockerfile
 FROM node
 
 COPY ./frontend /frontend
@@ -35,9 +29,7 @@ RUN npm ci
 CMD [ "npm", "run", "dev" ]
 ```
 
-### Docker Compose
-
-Create `docker-compose.yaml` and use the following:
+4. Create docker compose file `docker-compose.yaml`:
 
 ```yaml
 services:
@@ -56,9 +48,7 @@ services:
                       - node_modules
 ```
 
-### Modify Vite Config
-
-Edit the file `vite.config.js` and add the following line:
+5. Modify Vite config file `vite.config.js`:
 
 ```js
 export default defineConfig({
@@ -67,47 +57,35 @@ export default defineConfig({
 });
 ```
 
-### Start Container
+6.  Build and start container in watch mode:
 
 ```shell
 docker compose up --watch --build
 ```
 
-### Sync Docker to Local
-
-The `watch` is one way sync from local to container, but if we for example install a package on the cointaner and want to sync it back to our local we can use the following:
+7. Sync docker to local development folder. The `watch` is one way sync from local folder to container, but if we want to sync back an installed package on the cointaner back to our local folder, we can use:
 
 ```shell
 docker compose run --rm -v $(pwd)/frontend:/frontend frontend sh -c "npm install axios"
 ```
 
-### Restart Server
-
-After installing a new package, we need to stop (control+c) and start the server again with:
-
-```shell
-docker compose up --watch --build
-```
-
-However, if we want to just test our build we can use the following:
+8. Restart the fronend server in the cointaner, after installing a new package, we can stop the server with (control+c) and then re-build with:
 
 ```shell
 docker compose build
 ```
 
-and then to run it:
+and then finally run the new built in watch mode:
 
 ```shell
 docker compose up --watch
 ```
 
-## Django (Backend) Setup
+## Backend - Django
 
-### Django Requirement File
+1. Create the requirement file `requirements.txt`:
 
-First we create a file called requirements.txt and add the following to it:
-
-```
+```text
 Django==5.1.4
 ```
 

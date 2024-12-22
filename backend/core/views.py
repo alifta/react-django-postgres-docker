@@ -11,7 +11,7 @@ from rest_framework import filters
 from django_filters.rest_framework import DjangoFilterBackend
 from core.serializers import ProductSerializer, OrderSerializer, ProductInfoSerializer
 from core.models import Product, Order, OrderItem
-from core.filters import ProductFilter
+from core.filters import ProductFilter, InStockFilterBackend
 
 
 class ProductListCreateAPIView(generics.ListCreateAPIView):
@@ -23,6 +23,7 @@ class ProductListCreateAPIView(generics.ListCreateAPIView):
         DjangoFilterBackend,
         filters.SearchFilter,
         filters.OrderingFilter,
+        InStockFilterBackend,
     ]
     search_fields = ["name", "description"]
     ordering_fields = ["name", "price", "stock", "created_at"]
