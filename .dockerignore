@@ -1,2 +1,18 @@
 README.md
 frontend/node_modules/
+
+# Git
+.git
+.gitignore
+
+# Docker
+.docker
+
+# Python
+core/__pycache__/
+core/*/__pycache__/
+core/*/*/__pycache__/
+core/*/*/*/__pycache__/
+.env/
+.venv/
+venv/

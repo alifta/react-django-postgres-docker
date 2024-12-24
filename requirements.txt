@@ -1,13 +1,11 @@
 Django==5.1.4
-django-extensions==3.2.3
 djangorestframework==3.15.2
 djangorestframework-simplejwt[crypto]==5.3.1
 django-cors-headers==4.6.0
+django-extensions==3.2.3
 django-filter==24.3
 django-silk==5.3.2
 drf-spectacular==0.28.0
 psycopg[c]==3.2.3
 pillow==11.0.0
 tzdata==2024.2
-isort==5.13.2
-ruff==0.8.4
