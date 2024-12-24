@@ -1,6 +1,7 @@
 import django_filters
 from rest_framework import filters
-from core.models import Product, Order
+
+from core.models import Order, Product
 
 
 # Custom filter backend

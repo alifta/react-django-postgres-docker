@@ -10,3 +10,4 @@ psycopg[c]==3.2.3
 pillow==11.0.0
 tzdata==2024.2
 isort==5.13.2
+ruff==0.8.4

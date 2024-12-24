@@ -1,7 +1,8 @@
 from django.test import TestCase
-from core.models import Order, User
 from django.urls import reverse
 from rest_framework import status
+
+from core.models import Order, User
 
 
 class UserOrderTestCase(TestCase):
