@@ -111,9 +111,9 @@ AUTH_PASSWORD_VALIDATORS = [
     {
         "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
     },
-    {
-        "NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",
-    },
+    # {
+    # "NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",
+    # },
     {
         "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
     },
@@ -145,9 +145,9 @@ MEDIA_URL = "/media/"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-CORS_ALLOWED_ORIGINS = ["http://localhost:5173"]
-
 AUTH_USER_MODEL = "core.User"
+
+CORS_ALLOWED_ORIGINS = ["http://localhost:5173"]
 
 EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 
