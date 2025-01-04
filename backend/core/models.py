@@ -95,7 +95,7 @@ class Order(models.Model):
     )
 
     def __str__(self):
-        return f"Order {self.order_id } by {self.user.username}"
+        return f"Order {self.order_id } by {self.user.email}"
 
 
 class OrderItem(models.Model):

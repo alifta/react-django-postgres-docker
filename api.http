@@ -3,7 +3,7 @@ Content-Type: application/json
 
 {
   "email": "admin@example.com",
-  "password": "password"
+  "password": "password123"
 }
 
 ###
@@ -79,3 +79,29 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiY
 
 GET http://localhost:8000/api/user-orders/ HTTP/1.1
 Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzM0ODAzNjI3LCJpYXQiOjE3MzQ4MDI3MjcsImp0aSI6ImViZjZjNzIwMDZlMTQ4OWU4M2UzMWRiMDhkMzA1NjkzIiwidXNlcl9pZCI6Mn0.eLHqa-kTuQmUoW1ksbTvt-ltU3KNbo3DnLrSkinAP7o
+
+###
+
+GET http://localhost:8000/api/orders/ HTTP/1.1
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzM1OTc2MzU0LCJpYXQiOjE3MzU5NzI3NTQsImp0aSI6IjEzOTc1NTMxYmUyMDQ5YTQ5NjI0OWMxYTc2YmMyMDI3IiwidXNlcl9pZCI6MX0.oVasUZr7oPwN733qnYXwlxUcfC_0X-K08Tbw-gz_WxA
+
+###
+
+POST http://localhost:8000/api/orders/ HTTP/1.1
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzM1OTc2MzU0LCJpYXQiOjE3MzU5NzI3NTQsImp0aSI6IjEzOTc1NTMxYmUyMDQ5YTQ5NjI0OWMxYTc2YmMyMDI3IiwidXNlcl9pZCI6MX0.oVasUZr7oPwN733qnYXwlxUcfC_0X-K08Tbw-gz_WxA
+
+{
+    "status": "Confirmed",
+    # "user": 1,
+    "items": [
+      {
+        "product": 1,
+        "quantity": 1
+      },
+      {
+        "product": 2,
+        "quantity": 1
+      }
+    ]
+  }

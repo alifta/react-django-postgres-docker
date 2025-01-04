@@ -48,5 +48,7 @@ class OrderAdmin(admin.ModelAdmin):
 
 
 admin.site.register(models.User, UserAdmin)
-admin.site.register(models.Recipe)
 admin.site.register(models.Order, OrderAdmin)
+admin.site.register(models.Product)
+
+admin.site.register(models.Recipe)
