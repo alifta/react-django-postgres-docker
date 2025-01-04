@@ -2,7 +2,6 @@ from django.contrib import admin
 from django.urls import include, path
 from drf_spectacular.views import (
     SpectacularAPIView,
-    SpectacularRedocView,
     SpectacularSwaggerView,
 )
 from rest_framework_simplejwt.views import (
@@ -19,6 +18,10 @@ urlpatterns = [
     path("api/hello-world/", hello_world),
     # Core App API
     path("api/", include("core.urls")),
+    # User API
+    path("api/user/", include("user.urls")),
+    # Recipe API
+    path("api/recipe/", include("recipe.urls")),
     # Silk
     path("silk/", include("silk.urls", namespace="silk")),
     # JWT
@@ -27,13 +30,8 @@ urlpatterns = [
     # Schema
     path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
     path(
-        "api/schema/swagger-ui/",
+        "api/schema/swagger/",
         SpectacularSwaggerView.as_view(url_name="schema"),
-        name="swagger-ui",
-    ),
-    path(
-        "api/schema/redoc/",
-        SpectacularRedocView.as_view(url_name="schema"),
-        name="redoc",
+        name="swagger",
     ),
 ]

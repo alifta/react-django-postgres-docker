@@ -42,11 +42,14 @@ INSTALLED_APPS = [
     "django_filters",
     "corsheaders",
     "rest_framework",
+    "rest_framework.authtoken",
     "rest_framework_simplejwt",
     # "rest_framework_simplejwt.token_blacklist",
-    "silk",
     "drf_spectacular",
+    "silk",
     "core",
+    "user",
+    "recipe",
 ]
 
 MIDDLEWARE = [

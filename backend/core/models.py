@@ -4,8 +4,8 @@ Database models.
 
 import uuid
 
+from django.conf import settings
 from django.contrib.auth.models import (
-    AbstractUser,
     AbstractBaseUser,
     BaseUserManager,
     PermissionsMixin,
@@ -112,13 +112,17 @@ class OrderItem(models.Model):
 
 
 class Recipe(models.Model):
-    """Represents a recipe in the system"""
+    """Recipe object."""
 
-    name = models.CharField(max_length=255)
-    description = models.TextField()
-    # ingredients = models.TextField()
-    # directions = models.TextField()
-    # image = models.ImageField(upload_to="images/", blank=True, null=True)
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+    )
+    title = models.CharField(max_length=255)
+    description = models.TextField(blank=True)
+    time_minutes = models.IntegerField()
+    price = models.DecimalField(max_digits=5, decimal_places=2)
+    link = models.URLField(max_length=255, blank=True)
 
     def __str__(self):
-        return self.name
+        return self.title
