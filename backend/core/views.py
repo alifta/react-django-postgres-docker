@@ -9,10 +9,10 @@ from rest_framework.views import APIView
 from core.filters import InStockFilterBackend, OrderFilter, ProductFilter
 from core.models import Order, Product
 from core.serializers import (
+    OrderCreateSerializer,
     OrderSerializer,
     ProductInfoSerializer,
     ProductSerializer,
-    OrderCreateSerializer,
 )
 
 
