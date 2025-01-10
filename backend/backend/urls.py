@@ -1,3 +1,5 @@
+from django.conf import settings
+from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import include, path
 from drf_spectacular.views import (
@@ -9,21 +11,9 @@ from rest_framework_simplejwt.views import (
     TokenRefreshView,
 )
 
-from backend.views import hello_world
-
 urlpatterns = [
     # Admin
     path("admin/", admin.site.urls),
-    # Test endpoint
-    path("api/hello-world/", hello_world),
-    # Core App API
-    path("api/", include("core.urls")),
-    # User API
-    path("api/user/", include("user.urls")),
-    # Recipe API
-    path("api/recipe/", include("recipe.urls")),
-    # Silk
-    path("silk/", include("silk.urls", namespace="silk")),
     # JWT
     path("api/token/", TokenObtainPairView.as_view(), name="token_obtain_pair"),
     path("api/token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
@@ -34,4 +24,15 @@ urlpatterns = [
         SpectacularSwaggerView.as_view(url_name="schema"),
         name="swagger",
     ),
+    # Silk
+    path("silk/", include("silk.urls", namespace="silk")),
+    # Core
+    path("api/", include("core.urls")),
+    # User
+    path("api/user/", include("user.urls")),
+    # Recipe
+    path("api/recipe/", include("recipe.urls")),
 ]
+
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
