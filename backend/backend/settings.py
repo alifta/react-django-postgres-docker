@@ -181,8 +181,9 @@ SIMPLE_JWT = {
 
 SPECTACULAR_SETTINGS = {
     "TITLE": "HomeInBlock",
-    "DESCRIPTION": "Interior Designing Platform",
+    "DESCRIPTION": "Interior Design Platform",
     "VERSION": "1.0.0",
     "SERVE_INCLUDE_SCHEMA": False,
     # OTHER SETTINGS
+    "COMPONENT_SPLIT_REQUEST": True,
 }
