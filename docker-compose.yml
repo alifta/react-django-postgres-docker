@@ -38,6 +38,7 @@ services:
       - DB_NAME=db
       - DB_USER=user
       - DB_PASS=localdevpw
+      - DEBUG=1
     depends_on:
       db:
         condition: service_healthy
