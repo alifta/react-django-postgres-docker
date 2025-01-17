@@ -11,9 +11,13 @@ from rest_framework_simplejwt.views import (
     TokenRefreshView,
 )
 
+from core import views as core_views
+
 urlpatterns = [
     # Admin
     path("admin/", admin.site.urls),
+    # Health check
+    path("api/health-check/", core_views.health_check, name="health-check"),
     # JWT
     path("api/token/", TokenObtainPairView.as_view(), name="token_obtain_pair"),
     path("api/token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),

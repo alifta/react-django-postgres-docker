@@ -1,6 +1,11 @@
+"""
+Core views for backend.
+"""
+
 from django.db.models import Max
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, generics, viewsets
+from rest_framework.decorators import api_view
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import AllowAny, IsAdminUser, IsAuthenticated
 from rest_framework.response import Response
@@ -109,3 +114,9 @@ class ProductInfoAPIView(APIView):
             }
         )
         return Response(serializer.data)
+
+
+@api_view(["GET"])
+def health_check(request):
+    """Return successful response for health check."""
+    return Response({"healthy": True, "status": "ok"})
