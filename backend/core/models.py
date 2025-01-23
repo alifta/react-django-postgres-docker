@@ -51,14 +51,22 @@ class UserManager(BaseUserManager):
 class User(AbstractBaseUser, PermissionsMixin):
     """User in the system."""
 
+    USER_ROLES = (
+        ("designer", "Interior Designer"),
+        ("homeowner", "Homeowner"),
+        ("contractor", "Contractor"),
+        ("supplier", "Supplier"),
+        ("architect", "Architect"),
+    )
+
     email = models.EmailField(max_length=255, unique=True)
     name = models.CharField(max_length=255)
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
+    role = models.CharField(max_length=20, choices=USER_ROLES, default="homeowner")
     # cv = models.FileField(upload_to="cvs/", blank=True, null=True)
 
     USERNAME_FIELD = "email"
-    # REQUIRED_FIELDS = ["first_name", "last_name"]
 
     objects = UserManager()
 

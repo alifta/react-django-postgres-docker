@@ -16,8 +16,8 @@ POST http://localhost:8000/api/token/ HTTP/1.1
 Content-Type: application/json
 
 {
-  "username": "john-doe",
-  "password": "password"
+  "email": "test@example.com",
+  "password": "password123"
 }
 
 ###
@@ -81,13 +81,8 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiY
 
 ###
 
-GET http://localhost:8000/api/user-orders/ HTTP/1.1
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzM0ODAzNjI3LCJpYXQiOjE3MzQ4MDI3MjcsImp0aSI6ImViZjZjNzIwMDZlMTQ4OWU4M2UzMWRiMDhkMzA1NjkzIiwidXNlcl9pZCI6Mn0.eLHqa-kTuQmUoW1ksbTvt-ltU3KNbo3DnLrSkinAP7o
-
-###
-
 GET http://localhost:8000/api/orders/ HTTP/1.1
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzM1OTc2MzU0LCJpYXQiOjE3MzU5NzI3NTQsImp0aSI6IjEzOTc1NTMxYmUyMDQ5YTQ5NjI0OWMxYTc2YmMyMDI3IiwidXNlcl9pZCI6MX0.oVasUZr7oPwN733qnYXwlxUcfC_0X-K08Tbw-gz_WxA
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzM3NDgzNzE3LCJpYXQiOjE3Mzc0ODAxMTcsImp0aSI6ImU3MmE1ODA3YmJjZTQ0MGE5MmY0YTRhNzliY2E0OWM3IiwidXNlcl9pZCI6Mn0.DdactmTsZxLXo7R_r1gmumTyW-qG0TfkW2PUZ3Hqiw4
 
 ###
 

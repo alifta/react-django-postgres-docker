@@ -3,10 +3,12 @@ Core views for backend.
 """
 
 from django.db.models import Max
+from django.utils.decorators import method_decorator
+from django.views.decorators.cache import cache_page
+from django.views.decorators.vary import vary_on_headers
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, generics, viewsets
 from rest_framework.decorators import api_view
-from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import AllowAny, IsAdminUser, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -34,10 +36,22 @@ class ProductListCreateAPIView(generics.ListCreateAPIView):
     search_fields = ["name", "description"]
     ordering_fields = ["name", "price", "stock", "created_at"]
     # Override the default pagination settings
-    pagination_class = PageNumberPagination
-    pagination_class.page_size = 2
-    pagination_class.max_page_size = 10
-    pagination_class.page_size_query_param = "size"
+    pagination_class = None
+
+    # pagination_class = PageNumberPagination
+    # pagination_class.page_size = 2
+    # pagination_class.max_page_size = 10
+    # pagination_class.page_size_query_param = "size"
+
+    @method_decorator(cache_page(60 * 15, key_prefix="product_list"))  # 15 minutes
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
+
+    def get_queryset(self):
+        import time
+
+        time.sleep(2)
+        return super().get_queryset()
 
     def get_permissions(self):
         self.permission_classes = [AllowAny]
@@ -65,6 +79,11 @@ class OrderViewSet(viewsets.ModelViewSet):
     pagination_class = None
     filterset_class = OrderFilter
     filter_backends = [DjangoFilterBackend]
+
+    @method_decorator(cache_page(60 * 15, key_prefix="order_list"))
+    @method_decorator(vary_on_headers("Authorization"))
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)

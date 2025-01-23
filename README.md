@@ -182,3 +182,9 @@ docker compose run --rm backend sh -c "python manage.py createsuperuser"
 ```shell
 docker compose exec db psql -U user -d db
 ```
+
+Troubleshoot Redis
+
+```shell
+docker compose run --rm redis sh -c "redis-server --loglevel debug"
+```

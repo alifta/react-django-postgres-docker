@@ -8,6 +8,7 @@ from django.contrib.auth import (
 )
 from django.utils.translation import gettext as _
 from rest_framework import serializers
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -58,3 +59,14 @@ class AuthTokenSerializer(serializers.Serializer):
 
         attrs["user"] = user
         return attrs
+
+
+class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
+    """Customized serializer from rest_framework_simplejwt package."""
+
+    def validate(self, attrs):
+        data = super().validate(attrs)
+        # Add additonal user information to the token
+        # data["role"] = self.user.role
+        data["role"] = "homeowner"
+        return data
