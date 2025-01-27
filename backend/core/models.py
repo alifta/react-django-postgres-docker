@@ -16,6 +16,24 @@ from django.db import models
 # Models tha we can add later:
 # - Media (Images, Videos, etc.) for users, peroperties or projects
 #     - updated_by, created_by, created_at, updated_at, media_category, media_group, media_type, media_name, media_description, media_url, media_status, media_tags
+# - Projects (Projects, Tasks, etc.)
+#     - project_id, project_name, project_description, project_status, project_start_date, project_end_date, project_budget, project_currency, project_manager, project_team, project_client, project_location, project_tags
+# - Tasks (Tasks, Subtasks, etc.)
+#     - task_id, task_name, task_description, task_status, task_start_date, task_end_date, task_priority, task_assignee, task_tags
+# - Comments (Comments, Reviews, etc.)
+#     - comment_id, comment_text, comment_status, comment_created_at, comment_updated_at, comment_created_by, comment_updated_by, comment_tags
+# - Notifications (Notifications, Alerts, etc.)
+#     - notification_id, notification_text, notification_status, notification_created_at, notification_updated_at, notification_created_by, notification_updated_by, notification_tags
+# - Messages (Messages, Emails, etc.)
+#     - message_id, message_subject, message_text, message_status, message_created_at, message_updated_at, message_created_by, message_updated_by, message_tags
+# - Bookings (Bookings, Reservations, etc.)
+#     - booking_id, booking_start_date, booking_end_date, booking_status, booking_created_at, booking_updated_at, booking_created_by, booking_updated_by, booking_tags
+# - Payments (Payments, Invoices, etc.)
+#     - payment_id, payment_amount, payment_method, payment_status, payment_created_at, payment_updated_at, payment_created_by, payment_updated_by, payment_tags
+# - Reviews (Reviews, Ratings, etc.)
+#     - review_id, review_rating, review_text, review_status, review_created_at, review_updated_at, review_created_by, review_updated_by, review_tags
+# - Favorites (Favorites, Likes, etc.)
+#     - favorite_id, favorite_status, favorite_created_at, favorite_updated_at, favorite_created_by, favorite_updated_by, favorite_tags
 
 
 def recipe_image_file_path(instance, filename):
@@ -53,7 +71,6 @@ class UserManager(BaseUserManager):
 
 
 # USER
-# class User(AbstractUser, PermissionsMixin):
 class User(AbstractBaseUser, PermissionsMixin):
     """User model."""
 
@@ -88,13 +105,32 @@ class User(AbstractBaseUser, PermissionsMixin):
         return self.email
 
 
-# USER_PROFILE
+# LANGUAGE
+class Language(models.Model):
+    """Language model."""
+
+    language_id = models.BigAutoField(primary_key=True)
+    name = models.CharField(max_length=100, unique=True)
+
+    class Meta:
+        db_table = "languages"
+
+    def __str__(self):
+        return self.name
+
+
+# USER PROFILE
 class UserProfile(models.Model):
     """User profile model."""
 
     profile_id = models.BigAutoField(primary_key=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE, db_column="user_id")
     # office = models.ForeignKey(Office, on_delete=models.CASCADE, db_column="office_id")
+    languages = models.ManyToManyField(
+        Language,
+        through="UserProfileLanguage",
+        related_name="user_profiles",
+    )
     first_name = models.CharField(max_length=150)
     last_name = models.CharField(max_length=150)
     phone_number = models.CharField(max_length=50, blank=True, null=True)
@@ -113,14 +149,42 @@ class UserProfile(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    @property
+    def full_name(self):
+        return f"{self.first_name} {self.last_name}"
+
     class Meta:
         db_table = "user_profiles"
 
     def __str__(self):
-        return f"{self.first_name} {self.last_name}"
+        return f"{self.full_name}"
 
 
-# USER_ROLE
+# USER PROFILE LANGUAGE
+class UserProfileLanguage(models.Model):
+    """User profile language model captures many-to-many relationsheep between user profiles and languages."""
+
+    profile = models.ForeignKey(
+        UserProfile,
+        on_delete=models.CASCADE,
+        db_column="profile_id",
+        related_name="languages",
+    )
+    language = models.ForeignKey(
+        Language,
+        on_delete=models.CASCADE,
+        db_column="language_id",
+        related_name="user_profiles",
+    )
+
+    class Meta:
+        db_table = "user_profile_languages"
+
+    def __str__(self):
+        return f"{self.profile.full_name} -> {self.language.name}"
+
+
+# USER ROLE
 class UserRole(models.Model):
     """User roles model."""
 
@@ -134,16 +198,18 @@ class UserRole(models.Model):
         return self.name
 
 
-# 4. USER_ROLE_LINK
+# USER ROLE LINK
 class UserRoleLink(models.Model):
-    """User role link model captures relationsheep between users and roles."""
+    """User role link model captures many-to-many relationsheep between users and roles."""
 
     user = models.ForeignKey(User, on_delete=models.CASCADE, db_column="user_id")
     role = models.ForeignKey(UserRole, on_delete=models.CASCADE, db_column="role_id")
+    created_by = models.ForeignKey(User, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
         db_table = "user_role_link"
-        unique_together = (("user", "role"),)
 
     def __str__(self):
         return f"{self.user.email} -> {self.role.name}"
@@ -151,6 +217,8 @@ class UserRoleLink(models.Model):
 
 # PROPERTY
 class Property(models.Model):
+    """Property model."""
+
     property_id = models.BigAutoField(primary_key=True)
     owner = models.ForeignKey(User, on_delete=models.CASCADE, db_column="user_id")
     title = models.CharField(max_length=255)
@@ -163,10 +231,16 @@ class Property(models.Model):
     country = models.CharField(max_length=100)
     postal_code = models.CharField(max_length=20, blank=True, null=True)
     latitude = models.DecimalField(
-        max_digits=10, decimal_places=7, blank=True, null=True
+        max_digits=10,
+        decimal_places=7,
+        blank=True,
+        null=True,
     )
     longitude = models.DecimalField(
-        max_digits=10, decimal_places=7, blank=True, null=True
+        max_digits=10,
+        decimal_places=7,
+        blank=True,
+        null=True,
     )
     price = models.DecimalField(max_digits=100, decimal_places=2)
     is_available = models.BooleanField(default=True)
@@ -190,8 +264,10 @@ class Property(models.Model):
         return self.title
 
 
-# PROPERTY_PHOTO
+# PROPERTY PHOTO
 class PropertyPhoto(models.Model):
+    """Property photo model."""
+
     photo_id = models.BigAutoField(primary_key=True)
     property = models.ForeignKey(
         Property, on_delete=models.CASCADE, db_column="property_id"
@@ -210,8 +286,25 @@ class PropertyPhoto(models.Model):
 
 # AMENITIES
 class Amenity(models.Model):
+    """Amenity model."""
+
     amenity_id = models.BigAutoField(primary_key=True)
     name = models.CharField(max_length=100, unique=True)
+    description = models.TextField(blank=True, null=True)
+    latitude = models.DecimalField(
+        max_digits=10,
+        decimal_places=7,
+        blank=True,
+        null=True,
+    )
+    longitude = models.DecimalField(
+        max_digits=10,
+        decimal_places=7,
+        blank=True,
+        null=True,
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
         db_table = "amenities"
@@ -220,213 +313,122 @@ class Amenity(models.Model):
         return self.name
 
 
-# PROPERTY_AMENITY_LINK
-class PropertyAmenityLink(models.Model):
+# PROPERTY AMENITY
+class PropertyAmenity(models.Model):
+    """Property amenity model captures many-to-many relationsheep between properties and amenities."""
+
     property = models.ForeignKey(
-        Property, on_delete=models.CASCADE, db_column="property_id"
+        Property,
+        on_delete=models.CASCADE,
+        db_column="property_id",
+        related_name="amenities",
     )
     amenity = models.ForeignKey(
-        Amenity, on_delete=models.CASCADE, db_column="amenity_id"
+        Amenity,
+        on_delete=models.CASCADE,
+        db_column="amenity_id",
+        related_name="properties",
     )
 
     class Meta:
-        db_table = "property_amenity_link"
-        unique_together = (("property", "amenity"),)
+        db_table = "property_amenities"
 
     def __str__(self):
         return f"{self.property.title} -> {self.amenity.name}"
 
 
-# OPEN HOUSE
+# OPENHOUSE
 class OpenHouse(models.Model):
-    # Primary Key
-    open_house_id = models.BigAutoField(primary_key=True)
+    """Open house model."""
 
-    # Identifiers
-    open_house_key = models.CharField(
-        max_length=50, unique=True, db_column="OpenHouseKey"
-    )
-    open_house_key_numeric = models.BigIntegerField(
-        null=True, blank=True, db_column="OpenHouseKeyNumeric"
-    )
-    open_house_id_value = models.CharField(
-        max_length=50, null=True, blank=True, db_column="OpenHouseId"
-    )
-    listing_id = models.CharField(
-        max_length=50, null=True, blank=True, db_column="ListingId"
-    )
-    listing_key = models.CharField(
-        max_length=50, null=True, blank=True, db_column="ListingKey"
-    )
-    listing_key_numeric = models.BigIntegerField(
-        null=True, blank=True, db_column="ListingKeyNumeric"
+    METHOD_CHOICES = (
+        ("virtual", "Virtual"),
+        ("in-person", "In-Person"),
     )
 
-    # Timestamps
-    modification_timestamp = models.DateTimeField(
-        null=True, blank=True, db_column="ModificationTimestamp"
-    )
-    original_entry_timestamp = models.DateTimeField(
-        null=True, blank=True, db_column="OriginalEntryTimestamp"
-    )
-    bridge_modification_timestamp = models.DateTimeField(
-        null=True,
-        blank=True,
-        db_column="BridgeModificationTimestamp",
-        help_text="Timestamp last modified in the Bridge system (if applicable).",
+    STATUS_CHOICES = (
+        ("active", "Active"),
+        ("inactive", "Inactive"),
+        ("cancelled", "Cancelled"),
+        ("ended", "Ended"),
+        ("deleted", "Deleted"),
     )
 
-    # Open House Info
-    open_house_date = models.DateTimeField(
-        null=True, blank=True, db_column="OpenHouseDate"
-    )
-    open_house_start_time = models.DateTimeField(
-        null=True, blank=True, db_column="OpenHouseStartTime"
-    )
-    open_house_end_time = models.DateTimeField(
-        null=True, blank=True, db_column="OpenHouseEndTime"
-    )
-    open_house_remarks = models.TextField(
-        null=True, blank=True, db_column="OpenHouseRemarks"
-    )
-    open_house_attended_by = models.CharField(
-        max_length=100, null=True, blank=True, db_column="OpenHouseAttendedBy"
-    )
-    open_house_method = models.CharField(
-        max_length=50,
-        null=True,
-        blank=True,
-        db_column="OpenHouseMethod",
-        help_text="In-person or virtual, etc.",
-    )
-    appointment_required_yn = models.BooleanField(
-        null=True, blank=True, db_column="AppointmentRequiredYN"
-    )
-    refreshments = models.TextField(null=True, blank=True, db_column="Refreshments")
-
-    # If your open_house_status is single-valued:
-    open_house_status = models.CharField(
-        max_length=50, null=True, blank=True, db_column="OpenHouseStatus"
-    )
-    # If `Status` can be multi-valued in the JSON, you might store it
-    # in a separate model (OpenHouseStatus) instead.
-
-    # Additional Virtual Info
-    virtual_open_house_url = models.CharField(
-        max_length=255, null=True, blank=True, db_column="VirtualOpenHouseURL"
-    )
-    livestream_open_house_url = models.CharField(
-        max_length=255, null=True, blank=True, db_column="LivestreamOpenHouseURL"
-    )
-
-    # Agent Info
-    showing_agent_first_name = models.CharField(
-        max_length=100, null=True, blank=True, db_column="ShowingAgentFirstName"
-    )
-    showing_agent_last_name = models.CharField(
-        max_length=100, null=True, blank=True, db_column="ShowingAgentLastName"
-    )
-    showing_agent_key = models.CharField(
-        max_length=50, null=True, blank=True, db_column="ShowingAgentKey"
-    )
-    showing_agent_key_numeric = models.BigIntegerField(
-        null=True, blank=True, db_column="ShowingAgentKeyNumeric"
-    )
-    showing_agent_mls_id = models.CharField(
-        max_length=50, null=True, blank=True, db_column="ShowingAgentMlsID"
-    )
-
-    # Systems
-    originating_system_id = models.CharField(
-        max_length=50, null=True, blank=True, db_column="OriginatingSystemID"
-    )
-    originating_system_key = models.CharField(
-        max_length=50, null=True, blank=True, db_column="OriginatingSystemKey"
-    )
-    originating_system_name = models.CharField(
-        max_length=100, null=True, blank=True, db_column="OriginatingSystemName"
-    )
-    source_system_id = models.CharField(
-        max_length=50, null=True, blank=True, db_column="SourceSystemID"
-    )
-    source_system_key = models.CharField(
-        max_length=50, null=True, blank=True, db_column="SourceSystemKey"
-    )
-    source_system_name = models.CharField(
-        max_length=100, null=True, blank=True, db_column="SourceSystemName"
-    )
-
-    # Potential "Attended" from JSON
-    attended = models.CharField(
-        max_length=50,
-        null=True,
-        blank=True,
-        db_column="Attended",
-        help_text="Could be 'Attended by agent', 'Unattended', 'Attended by seller', etc.",
-    )
-
-    class Meta:
-        db_table = "open_house"
-
-    def __str__(self):
-        return f"OpenHouse {self.open_house_key} - {self.open_house_date}"
-
-
-class OpenHouseType(models.Model):
-    """
-    If OpenHouseType is an array, we store each type as a row here.
-    E.g. "Public", "Broker", "Office", etc.
-    """
-
-    id = models.BigAutoField(primary_key=True)
-    open_house = models.ForeignKey(
-        OpenHouse,
-        on_delete=models.CASCADE,
-        db_column="open_house_id",
-        related_name="house_types",
-    )
-    type_value = models.CharField(max_length=50, db_column="OpenHouseType")
-
-    class Meta:
-        db_table = "open_house_types"
-
-    def __str__(self):
-        return f"{self.open_house.open_house_key} - {self.type_value}"
-
-
-class OpenHouseStatus(models.Model):
-    """
-    If 'Status' can be multiple in the JSON, store them here.
-    E.g. "Active", "Cancelled", "Ended", etc.
-    """
-
-    id = models.BigAutoField(primary_key=True)
-    open_house = models.ForeignKey(
-        OpenHouse,
-        on_delete=models.CASCADE,
-        db_column="open_house_id",
-        related_name="house_statuses",
-    )
-    status_value = models.CharField(max_length=50, db_column="OpenHouseStatus")
-
-    class Meta:
-        db_table = "open_house_statuses"
-
-    def __str__(self):
-        return f"{self.open_house.open_house_key} - {self.status_value}"
-
-
-# 9. BOOKINGS
-class Bookings(models.Model):
-    booking_id = models.BigAutoField(primary_key=True)
+    openhouse_id = models.BigAutoField(primary_key=True)
     property = models.ForeignKey(
         Property, on_delete=models.CASCADE, db_column="property_id"
     )
-    guest = models.ForeignKey(User, on_delete=models.CASCADE, db_column="guest_id")
-    check_in_date = models.DateField()
-    check_out_date = models.DateField()
-    total_price = models.DecimalField(max_digits=10, decimal_places=2)
-    booking_status = models.CharField(max_length=50, default="pending")
+    agents = models.ManyToManyField(User, through="OpenHouseAgent")
+    date = models.DateTimeField(null=True, blank=True)
+    starttime = models.DateTimeField(null=True, blank=True)
+    endtime = models.DateTimeField(null=True, blank=True)
+    method = models.CharField(
+        max_length=20,
+        choices=METHOD_CHOICES,
+        default="in-person",
+    )
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="inactive")
+    notes = models.TextField(null=True, blank=True)
+    attendess = models.TextField(null=True, blank=True)
+    virtual_url = models.CharField(max_length=255, null=True, blank=True)
+    created_by = models.ForeignKey(User, on_delete=models.CASCADE)
+    updated_by = models.ForeignKey(User, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = "openhouses"
+
+    def __str__(self):
+        return f"OpenHouse {self.property.title} - {self.date}"
+
+
+# OPENHOUSE AGENT
+class OpenHouseAgent(models.Model):
+    """Open house agent model captures many-to-many relationsheep between openhouses and agent users."""
+
+    STATUS_CHOICES = (
+        ("active", "Active"),
+        ("inactive", "Inactive"),
+        ("pending", "Pending"),
+        ("deleted", "Deleted"),
+    )
+
+    openhouse = models.ForeignKey(
+        OpenHouse,
+        on_delete=models.CASCADE,
+        db_column="openhouse_id",
+    )
+    agent = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        db_column="agent_id",
+        related_name="openhouses",
+    )
+    status = models.CharField(max_length=50, choices=STATUS_CHOICES, default="pending")
+
+    class Meta:
+        db_table = "openhouse_agents"
+
+    def __str__(self):
+        return f"{self.openhouse.openhouse_id} - {self.status}"
+
+
+# BOOKING
+class Booking(models.Model):
+    """Booking model."""
+
+    booking_id = models.BigAutoField(primary_key=True)
+    property = models.ForeignKey(
+        Property,
+        on_delete=models.CASCADE,
+        db_column="property_id",
+    )
+    guest = models.ForeignKey(User, on_delete=models.CASCADE, db_column="user_id")
+    check_in = models.DateField(blank=True, null=True)
+    check_out = models.DateField(blank=True, null=True)
+    price = models.DecimalField(max_digits=10, decimal_places=2)
+    status = models.CharField(max_length=50, default="pending")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -437,17 +439,22 @@ class Bookings(models.Model):
         return f"Booking {self.booking_id} for {self.property.title}"
 
 
-# 10. PAYMENTS
-class Payments(models.Model):
+# PAYMENT
+class Payment(models.Model):
+    """Payment model."""
+
     payment_id = models.BigAutoField(primary_key=True)
     booking = models.ForeignKey(
-        Bookings, on_delete=models.CASCADE, db_column="booking_id"
+        Booking,
+        on_delete=models.CASCADE,
+        db_column="booking_id",
     )
+    # transaction = models.CharField(max_length=255, blank=True, null=True)
     amount = models.DecimalField(max_digits=10, decimal_places=2)
-    payment_method = models.CharField(max_length=50)
-    payment_status = models.CharField(max_length=50, default="pending")
-    transaction_id = models.CharField(max_length=255, blank=True, null=True)
+    method = models.CharField(max_length=50)
+    status = models.CharField(max_length=50, default="pending")
     created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
         db_table = "payments"
@@ -456,11 +463,13 @@ class Payments(models.Model):
         return f"Payment {self.payment_id} for Booking {self.booking_id}"
 
 
-# 11. REVIEWS
+# REVIEW
 class Reviews(models.Model):
+    """Review model."""
+
     review_id = models.BigAutoField(primary_key=True)
     booking = models.ForeignKey(
-        Bookings, on_delete=models.CASCADE, db_column="booking_id"
+        Booking, on_delete=models.CASCADE, db_column="booking_id"
     )
     reviewer = models.ForeignKey(
         User, on_delete=models.CASCADE, db_column="reviewer_id"
@@ -476,8 +485,10 @@ class Reviews(models.Model):
         return f"Review {self.review_id} - Rating: {self.rating}"
 
 
-# 12. FAVORITES
-class Favorites(models.Model):
+# FAVORITE
+class Favorite(models.Model):
+    """Favorite model."""
+
     favorite_id = models.BigAutoField(primary_key=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE, db_column="user_id")
     property = models.ForeignKey(
@@ -492,8 +503,10 @@ class Favorites(models.Model):
         return f"Favorite {self.favorite_id} by {self.user.email}"
 
 
-# 13. MESSAGES
+# MESSAGE
 class Messages(models.Model):
+    """Message model."""
+
     message_id = models.BigAutoField(primary_key=True)
     sender = models.ForeignKey(
         User,
@@ -517,8 +530,10 @@ class Messages(models.Model):
         return f"Message {self.message_id} from {self.sender.email} to {self.receiver.email}"
 
 
-# 14. NOTIFICATIONS
+# NOTIFICATION
 class Notifications(models.Model):
+    """Notification model."""
+
     notification_id = models.BigAutoField(primary_key=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE, db_column="user_id")
     message = models.CharField(max_length=255)
@@ -532,6 +547,7 @@ class Notifications(models.Model):
         return f"Notification {self.notification_id} for {self.user.email}"
 
 
+# PRODUCT
 class Product(models.Model):
     """Represents a product in the system"""
 
@@ -549,6 +565,7 @@ class Product(models.Model):
         return self.name
 
 
+# ORDER
 class Order(models.Model):
     """Represents an order in the system"""
 
@@ -561,18 +578,23 @@ class Order(models.Model):
     order_id = models.UUIDField(primary_key=True, default=uuid.uuid4)
     created_at = models.DateTimeField(auto_now_add=True, db_index=True)
     status = models.CharField(
-        max_length=10, choices=StatusChoices.choices, default=StatusChoices.PENDING
+        max_length=10,
+        choices=StatusChoices.choices,
+        default=StatusChoices.PENDING,
     )
 
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     products = models.ManyToManyField(
-        Product, through="OrderItem", related_name="orders"
+        Product,
+        through="OrderItem",
+        related_name="orders",
     )
 
     def __str__(self):
         return f"Order {self.order_id} by {self.user.email}"
 
 
+# ORDER ITEM
 class OrderItem(models.Model):
     order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name="items")
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
@@ -586,6 +608,7 @@ class OrderItem(models.Model):
         return f"{self.quantity} x {self.product.name} in Order {self.order.order_id}"
 
 
+# RECIPE
 class Recipe(models.Model):
     """Recipe object."""
 
@@ -606,6 +629,7 @@ class Recipe(models.Model):
         return self.title
 
 
+# TAG
 class Tag(models.Model):
     """Tag for filtering recipes."""
 
