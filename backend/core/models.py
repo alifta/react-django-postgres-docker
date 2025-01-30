@@ -83,15 +83,15 @@ class User(AbstractBaseUser, PermissionsMixin):
     )
 
     user_id = models.BigAutoField(primary_key=True)
-    username = models.CharField(max_length=150, unique=True)
-    email = models.EmailField(max_length=254, unique=True)
+    username = models.CharField(max_length=150, unique=True, db_index=True)
+    email = models.EmailField(max_length=254, unique=True, db_index=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="active")
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
     is_superuser = models.BooleanField(default=False)
     # password_hash = models.CharField(max_length=255)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+    updated_at = models.DateTimeField(auto_now=True, db_index=True)
 
     objects = UserManager()
 
@@ -119,6 +119,28 @@ class Language(models.Model):
         return self.name
 
 
+# ADDRESS
+class Address(models.Model):
+    """Address model."""
+
+    address_line_1 = models.CharField(max_length=255)
+    address_line_2 = models.CharField(max_length=255, blank=True, null=True)
+    city = models.CharField(max_length=100)
+    state = models.CharField(max_length=100, blank=True, null=True)
+    country = models.CharField(max_length=100)
+    postal_code = models.CharField(max_length=20, blank=True, null=True)
+    latitude = models.DecimalField(max_digits=10, decimal_places=7, default=0.0)
+    longitude = models.DecimalField(max_digits=10, decimal_places=7, default=0.0)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = "addresses"
+
+    def __str__(self):
+        return f"{self.address_line_1}, {self.city}, {self.state}, {self.country}"
+
+
 # USER PROFILE
 class UserProfile(models.Model):
     """User profile model."""
@@ -129,7 +151,7 @@ class UserProfile(models.Model):
     languages = models.ManyToManyField(
         Language,
         through="UserProfileLanguage",
-        related_name="user_profiles",
+        related_name="profile_languages",
     )
     first_name = models.CharField(max_length=150)
     last_name = models.CharField(max_length=150)
@@ -140,12 +162,14 @@ class UserProfile(models.Model):
     bio = models.TextField(blank=True, null=True)
     cv = models.CharField(max_length=255, blank=True, null=True)
     job_title = models.CharField(max_length=100, blank=True, null=True)
-    address1 = models.CharField(max_length=255, blank=True, null=True)
-    address2 = models.CharField(max_length=255, blank=True, null=True)
-    city = models.CharField(max_length=100, blank=True, null=True)
-    state = models.CharField(max_length=100, blank=True, null=True)
-    postal_code = models.CharField(max_length=20, blank=True, null=True)
-    country = models.CharField(max_length=50, blank=True, null=True)
+    address = models.OneToOneField(
+        Address,
+        on_delete=models.CASCADE,
+        db_column="user_profile_address_id",
+        blank=True,
+        null=True,
+        related_name="profile_address",
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -162,19 +186,19 @@ class UserProfile(models.Model):
 
 # USER PROFILE LANGUAGE
 class UserProfileLanguage(models.Model):
-    """User profile language model captures many-to-many relationsheep between user profiles and languages."""
+    """User profile language model captures many-to-many relationship between user profiles and languages."""
 
     profile = models.ForeignKey(
         UserProfile,
         on_delete=models.CASCADE,
         db_column="profile_id",
-        related_name="languages",
+        related_name="profile_languages",
     )
     language = models.ForeignKey(
         Language,
         on_delete=models.CASCADE,
         db_column="language_id",
-        related_name="user_profiles",
+        related_name="language_profiles",
     )
 
     class Meta:
@@ -200,10 +224,20 @@ class UserRole(models.Model):
 
 # USER ROLE LINK
 class UserRoleLink(models.Model):
-    """User role link model captures many-to-many relationsheep between users and roles."""
+    """User role link model captures many-to-many relationship between users and roles."""
 
-    user = models.ForeignKey(User, on_delete=models.CASCADE, db_column="user_id")
-    role = models.ForeignKey(UserRole, on_delete=models.CASCADE, db_column="role_id")
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        db_column="user_id",
+        related_name="role_links",
+    )
+    role = models.ForeignKey(
+        UserRole,
+        on_delete=models.CASCADE,
+        db_column="role_id",
+        related_name="role_users",
+    )
     created_by = models.ForeignKey(User, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -224,25 +258,15 @@ class Property(models.Model):
     title = models.CharField(max_length=255)
     description = models.TextField()
     property_type = models.CharField(max_length=100)
-    address_line_1 = models.CharField(max_length=255)
-    address_line_2 = models.CharField(max_length=255, blank=True, null=True)
-    city = models.CharField(max_length=100)
-    state = models.CharField(max_length=100, blank=True, null=True)
-    country = models.CharField(max_length=100)
-    postal_code = models.CharField(max_length=20, blank=True, null=True)
-    latitude = models.DecimalField(
-        max_digits=10,
-        decimal_places=7,
-        blank=True,
+    address = models.OneToOneField(
+        Address,
+        on_delete=models.CASCADE,
+        db_column="property_address_id",
         null=True,
-    )
-    longitude = models.DecimalField(
-        max_digits=10,
-        decimal_places=7,
         blank=True,
-        null=True,
+        related_name="property_address",
     )
-    price = models.DecimalField(max_digits=100, decimal_places=2)
+    price = models.DecimalField(max_digits=10, decimal_places=2)
     is_available = models.BooleanField(default=True)
     floor_area = models.FloatField(blank=True, null=True)
     ceiling_height = models.DecimalField(
@@ -315,23 +339,28 @@ class Amenity(models.Model):
 
 # PROPERTY AMENITY
 class PropertyAmenity(models.Model):
-    """Property amenity model captures many-to-many relationsheep between properties and amenities."""
+    """Property amenity model captures many-to-many relationship between properties and amenities."""
 
     property = models.ForeignKey(
         Property,
         on_delete=models.CASCADE,
         db_column="property_id",
-        related_name="amenities",
+        related_name="property_amenities",
     )
     amenity = models.ForeignKey(
         Amenity,
         on_delete=models.CASCADE,
         db_column="amenity_id",
-        related_name="properties",
+        related_name="amenity_properties",
     )
 
     class Meta:
         db_table = "property_amenities"
+        constraints = [
+            models.UniqueConstraint(
+                fields=["property", "amenity"], name="unique_property_amenity"
+            )
+        ]
 
     def __str__(self):
         return f"{self.property.title} -> {self.amenity.name}"
@@ -385,7 +414,7 @@ class OpenHouse(models.Model):
 
 # OPENHOUSE AGENT
 class OpenHouseAgent(models.Model):
-    """Open house agent model captures many-to-many relationsheep between openhouses and agent users."""
+    """Open house agent model captures many-to-many relationship between openhouses and agent users."""
 
     STATUS_CHOICES = (
         ("active", "Active"),
@@ -403,7 +432,7 @@ class OpenHouseAgent(models.Model):
         User,
         on_delete=models.CASCADE,
         db_column="agent_id",
-        related_name="openhouses",
+        related_name="agent_openhouses",
     )
     status = models.CharField(max_length=50, choices=STATUS_CHOICES, default="pending")
 
@@ -464,7 +493,7 @@ class Payment(models.Model):
 
 
 # REVIEW
-class Reviews(models.Model):
+class Review(models.Model):
     """Review model."""
 
     review_id = models.BigAutoField(primary_key=True)
@@ -504,7 +533,7 @@ class Favorite(models.Model):
 
 
 # MESSAGE
-class Messages(models.Model):
+class Message(models.Model):
     """Message model."""
 
     message_id = models.BigAutoField(primary_key=True)
@@ -531,7 +560,7 @@ class Messages(models.Model):
 
 
 # NOTIFICATION
-class Notifications(models.Model):
+class Notification(models.Model):
     """Notification model."""
 
     notification_id = models.BigAutoField(primary_key=True)
