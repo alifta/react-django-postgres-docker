@@ -165,7 +165,7 @@ class UserProfile(models.Model):
     address = models.OneToOneField(
         Address,
         on_delete=models.CASCADE,
-        db_column="user_profile_address_id",
+        db_column="address_id",
         blank=True,
         null=True,
         related_name="profile_address",
@@ -230,7 +230,7 @@ class UserRoleLink(models.Model):
         User,
         on_delete=models.CASCADE,
         db_column="user_id",
-        related_name="role_links",
+        related_name="user_roles",
     )
     role = models.ForeignKey(
         UserRole,
