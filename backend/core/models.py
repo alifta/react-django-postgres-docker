@@ -6,7 +6,6 @@ import os
 import uuid
 
 from django.conf import settings
-from django.utils.text import slugify
 from django.contrib.auth.models import (
     AbstractBaseUser,
     BaseUserManager,
@@ -66,7 +65,9 @@ class BaseTag(models.Model):
 
     tags = models.ManyToManyField(
         "Tag",
+        # null=True,
         blank=True,
+        related_name="%(class)s_tags",
         help_text="Tags for filtering.",
     )
 
@@ -164,7 +165,8 @@ class Tag(models.Model):
     # Associate the tag with the user who created it
     created_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE,
+        on_delete=models.SET_NULL,
+        null=True,
         help_text="User who created this tag.",
     )
 
@@ -175,7 +177,11 @@ class Tag(models.Model):
         return self.name
 
 
+# ====
 # USER
+# ====
+
+
 class User(AbstractBaseUser, PermissionsMixin, BaseTag):
     """
     User Model.
@@ -190,6 +196,12 @@ class User(AbstractBaseUser, PermissionsMixin, BaseTag):
 
     # Primary key field
     user_id = models.BigAutoField(primary_key=True)
+    # user_id = models.UUIDField(
+    #     primary_key=True,
+    #     default=uuid.uuid4,
+    #     editable=False,
+    #     unique=True,
+    # )
 
     # Email is the unique identifier for authentication
     email = models.EmailField(
@@ -217,6 +229,7 @@ class User(AbstractBaseUser, PermissionsMixin, BaseTag):
     roles = models.ManyToManyField(
         "Role",
         through="UserRole",
+        through_fields=("user", "role"),
         related_name="users",
         verbose_name="Assigned roles to the user.",
     )
@@ -360,7 +373,7 @@ class Profile(BaseTag):
     role_assignment = models.OneToOneField(
         "UserRole",
         on_delete=models.CASCADE,
-        related_name="profile",
+        related_name="profile_link",
     )
     organization = models.ForeignKey(
         "Organization",
@@ -375,7 +388,7 @@ class Profile(BaseTag):
     profile_picture = models.CharField(max_length=255, blank=True, null=True)
     date_of_birth = models.DateField(blank=True, null=True)
     languages = models.ManyToManyField(
-        "Languages",
+        "Language",
         through="ProfileLanguage",
         related_name="profiles",
     )
@@ -448,7 +461,7 @@ class ProfileLanguage(models.Model):
 
 
 # USER ROLE
-class UserRole(models.Model):
+class UserRole(BaseActivity):
     """
     User role juction model with 1:1 relationship between user, role and profile.
     """
@@ -471,15 +484,8 @@ class UserRole(models.Model):
         null=True,
         blank=True,
         db_column="profile_id",
-        related_name="role_assignment",
+        related_name="user_role",
     )
-    assigned_by = models.ForeignKey(
-        "User",
-        on_delete=models.SET_NULL,
-        db_column="assigner_user_id",
-    )
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
         db_table = "user_roles"
@@ -575,6 +581,7 @@ class Property(BaseTag):
     )
     owner = models.ForeignKey(
         "User",
+        null=True,
         on_delete=models.SET_NULL,
         db_column="user_id",
         related_name="properties",
@@ -756,8 +763,12 @@ class PropertyAmenity(models.Model):
         return f"{self.property.title} -> {self.amenity.name}"
 
 
+# =========
 # OPENHOUSE
-class OpenHouse(BaseTag):
+# =========
+
+
+class OpenHouse(BaseActivity, BaseTag):
     """Open house model."""
 
     METHOD_CHOICES = (
@@ -777,7 +788,9 @@ class OpenHouse(BaseTag):
         on_delete=models.CASCADE,
         db_column="property_id",
     )
-    agents = models.ManyToManyField(User, through="OpenHouseAgent")
+    agents = models.ManyToManyField(
+        User, through="OpenHouseAgent", related_name="openhouses_agent"
+    )
     date = models.DateTimeField(null=True, blank=True)
     starttime = models.DateTimeField(null=True, blank=True)
     endtime = models.DateTimeField(null=True, blank=True)
@@ -788,10 +801,6 @@ class OpenHouse(BaseTag):
     notes = models.TextField(null=True, blank=True)
     attendees = models.TextField(null=True, blank=True)
     virtual_url = models.CharField(max_length=255, null=True, blank=True)
-    created_by = models.ForeignKey("User", on_delete=models.CASCADE)
-    updated_by = models.ForeignKey("User", on_delete=models.CASCADE)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
         db_table = "openhouses"

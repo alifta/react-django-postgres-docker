@@ -11,6 +11,7 @@ from rest_framework_simplejwt.views import (
     TokenRefreshView,
 )
 
+from backend import views as backend_views
 from core import views as core_views
 
 urlpatterns = [
@@ -36,6 +37,8 @@ urlpatterns = [
     path("api/recipe/", include("recipe.urls")),
     # Silk - must be the last URL
     path("silk/", include("silk.urls", namespace="silk")),
+    # Frontend test api
+    path("api/hello-world/", backend_views.hello_world, name="hello-world"),
 ]
 
 if settings.DEBUG:

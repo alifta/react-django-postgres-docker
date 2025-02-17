@@ -13,4 +13,5 @@ tzdata==2024.2
 celery==5.4.0
 redis==5.2.1
 # redis[hiredis]==5.2.1
+gunicorn==23.0.0
 uwsgi==2.0.28

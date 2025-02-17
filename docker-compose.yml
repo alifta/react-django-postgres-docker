@@ -21,7 +21,7 @@ services:
       timeout: 5s
       retries: 5
 
-  # Redis service
+  # Redis cache service
   redis:
     image: redis:7.4.2-alpine
     container_name: redis_cache
@@ -33,21 +33,20 @@ services:
       timeout: 5s
       retries: 5
 
-  # Message queue service
+  # RabbitMQ queue service
   mq:
     image: rabbitmq:4.0.5-alpine
     container_name: rabbitmq_queue
-    # ports:
-    #   - 5672:5672
-    #   - 15672:15672
+    ports:
+      - 5672:5672
     environment:
       - RABBITMQ_DEFAULT_USER=user
       - RABBITMQ_DEFAULT_PASS=localdevpw
-    # healthcheck:
-    #   test: [ "CMD", "rabbitmqctl", "node_health_check" ]
-    #   interval: 5s
-    #   timeout: 5s
-    #   retries: 5
+    healthcheck:
+      test: [ "CMD", "rabbitmqctl", "node_health_check" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
   # Backend service
   backend:
@@ -71,7 +70,7 @@ services:
       - DB_NAME=db
       - DB_USER=user
       - DB_PASS=localdevpw
-      - DEBUG=1
+      - DEBUG=True
       - CELERY_BROKER_URL=amqp://user:localdevpw@mq:5672//
     depends_on:
       db:
@@ -89,8 +88,16 @@ services:
       - ./backend:/backend
     command: >
       sh -c "celery -A backend worker --loglevel=info"
+    environment:
+      - DB_HOST=db
+      - DB_NAME=db
+      - DB_USER=user
+      - DB_PASS=localdevpw
+      - DEBUG=1
+      # - CELERY_BROKER_URL=amqp://user:localdevpw@mq:5672//
     depends_on:
       - db
+      - mq
       - redis
       - backend
 

@@ -153,3 +153,11 @@ Allow platform admins to monitor and manage the system.
 -   Monitor all projects.
 -   DELETE /api/admin/projects/{project_id}/
 -   Remove a project if necessary.
+
+# Django
+
+###
+
+```python
+python -c "import secrets; import string; print(''.join(secrets.choice(string.ascii_letters + string.digits + string.punctuation) for _ in range(50)))"
+```

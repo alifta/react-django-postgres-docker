@@ -9,3 +9,5 @@ python manage.py migrate
 
 uwsgi --socket :9000 --workers 4 --master --enable-threads --module backend.wsgi
 # uwsgi --socket :9000 --master --enable-threads --module backend.wsgi
+
+# python -m gunicorn --bind 0.0.0.0:8000 --workers 3 backend.wsgi:application
