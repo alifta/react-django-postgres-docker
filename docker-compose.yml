@@ -71,7 +71,8 @@ services:
       - DB_USER=user
       - DB_PASS=localdevpw
       - DEBUG=True
-      - CELERY_BROKER_URL=amqp://user:localdevpw@mq:5672//
+      - ALLOWED_HOSTS=* # For development only
+      # - CELERY_BROKER_URL=amqp://user:localdevpw@mq:5672//
     depends_on:
       db:
         condition: service_healthy
@@ -94,7 +95,6 @@ services:
       - DB_USER=user
       - DB_PASS=localdevpw
       - DEBUG=1
-      # - CELERY_BROKER_URL=amqp://user:localdevpw@mq:5672//
     depends_on:
       - db
       - mq

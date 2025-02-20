@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "django_extensions",
     "django_filters",
     "corsheaders",
     "rest_framework",
@@ -158,6 +159,7 @@ CORS_ALLOWED_ORIGINS = ["http://localhost:5173"]
 
 EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 
+# Django REST Framework settings
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
         "rest_framework_simplejwt.authentication.JWTAuthentication",
@@ -170,6 +172,26 @@ REST_FRAMEWORK = {
     # "DEFAULT_PERMISSION_CLASSES": [
     #     "rest_framework.permissions.IsAuthenticated",  # Default permission for all views
     # ],
+    # Throttling
+    "DEFAULT_THROTTLE_CLASSES": [
+        "rest_framework.throttling.AnonRateThrottle",
+        # "rest_framework.throttling.UserRateThrottle",
+        # Custom throttles
+        "core.throttles.BurstRateThrottle",
+        "core.throttles.SustainedRateThrottle",
+        # Scoped Throttles
+        "rest_framework.throttling.ScopedRateThrottle",
+    ],
+    "DEFAULT_THROTTLE_RATES": {
+        "anon": "100/day",
+        # "user": "1000/day",
+        # Custom throttles
+        "burst": "10/min",  # 60/min
+        "sustained": "20/hour",  # 1000/day
+        # Scoped Throttles
+        "products": "2/min",
+        "orders": "3/min",
+    },
 }
 
 SIMPLE_JWT = {
@@ -180,6 +202,7 @@ SIMPLE_JWT = {
     "ALGORITHM": "HS256",
     "SIGNING_KEY": SECRET_KEY,  # Use a secure signing key
     "AUTH_HEADER_TYPES": ("Bearer",),  # Use "Bearer" for token prefix
+    "USER_ID_FIELD": "user_id",  # Custom user ID field
 }
 
 SPECTACULAR_SETTINGS = {

@@ -92,12 +92,18 @@ Create the requirement file `requirements.txt`:
 Django==5.1.4
 ```
 
-### Create Admin
+### Create admin user
 
 To create an admin user for Django (enabaling access to admin portal) for the Django project runnning on docker is by using the following command:
 
 ```shell
 docker compose run --rm backend sh -c "python manage.py createsuperuser"
+```
+
+### Run Django tests
+
+```shell
+docker compose run --rm backend sh -c "python manage.py test"
 ```
 
 ## Docker
@@ -116,6 +122,12 @@ To run dcoker and bring up the services in terminal, run the new built docker fi
 
 ```shell
 docker compose up --watch
+```
+
+### Stop docker
+
+```shell
+docker compose down
 ```
 
 ### Dockerfile for backend
@@ -178,6 +190,7 @@ For example we can install a new Django on a container directly by using as a th
 ```shell
 docker compose run --rm backend sh -c "django-admin startproject <backend> ."
 docker compose run --rm backend sh -c "python manage.py startapp core"
+docker-compose run --rm backend sh -c "python manage.py createsuperuser"
 ```
 
 You can replace `backend` with `app` for example.
@@ -244,6 +257,15 @@ After using two prevous steps and this, a new databse should be created, and avo
 
 ```
 python manage.py makemigrations --name initial core
+```
+
+### Port 5432 (on local machine) is not available
+
+This error indicates that that port 5432 is already in use. To resolve, we first find the service using this port number and then we terminate it
+
+```bash
+sudo lsof -i :5432
+sudo kill -9 <PID>
 ```
 
 ## Radis

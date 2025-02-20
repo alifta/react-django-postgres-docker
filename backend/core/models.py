@@ -25,9 +25,13 @@ def recipe_image_file_path(instance, filename):
     return os.path.join("uploads", "recipe", filename)
 
 
-# ===============
-# Abstract Models
-# ===============
+# ======
+# Models
+# ======
+
+# =============
+# BASE ACTIVITY
+# =============
 
 
 class BaseActivity(models.Model):
@@ -37,17 +41,15 @@ class BaseActivity(models.Model):
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-
-    # Using SET_NULL so that if a user is removed, the activity remains.
     created_by = models.ForeignKey(
-        "User",
+        settings.AUTH_USER_MODEL,
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
         related_name="%(class)s_created",
     )
     updated_by = models.ForeignKey(
-        "User",
+        settings.AUTH_USER_MODEL,
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
@@ -58,21 +60,9 @@ class BaseActivity(models.Model):
         abstract = True
 
 
-class BaseTag(models.Model):
-    """
-    An abstract model that adds ManyToManyField tags for object filtering.
-    """
-
-    tags = models.ManyToManyField(
-        "Tag",
-        # null=True,
-        blank=True,
-        related_name="%(class)s_tags",
-        help_text="Tags for filtering.",
-    )
-
-    class Meta:
-        abstract = True
+# ==============
+# BASE TIMESTAMP
+# ==============
 
 
 class BaseTimestamp(models.Model):
@@ -82,6 +72,56 @@ class BaseTimestamp(models.Model):
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        abstract = True
+
+
+# ===========
+# GENERIC TAG
+# ===========
+
+
+class GenericTag(models.Model):
+    """Generic tag model."""
+
+    name = models.CharField(
+        max_length=100,
+        help_text="Name for the tag.",
+    )
+
+    # Associate the tag with the user who created it
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        help_text="User who created this tag.",
+    )
+
+    class Meta:
+        db_table = "tags"
+
+    def __str__(self):
+        return self.name
+
+
+# =================
+# ABSTRACT BASE TAG
+# =================
+
+
+class BaseTag(models.Model):
+    """
+    BaseTag is an abstract model, designed to add tags to models, but it uses a ManyToManyField to the Tag model, called tags, that can be used for object filtering.
+    """
+
+    tags = models.ManyToManyField(
+        "GenericTag",
+        # null=True,
+        blank=True,
+        related_name="%(class)s_tags",
+        help_text="Generic tags for filtering.",
+    )
 
     class Meta:
         abstract = True
@@ -112,69 +152,6 @@ class UserManager(BaseUserManager):
         extra_fields.setdefault("is_staff", True)
         extra_fields.setdefault("is_superuser", True)
         return self.create_user(email, password, **extra_fields)
-
-
-# ======
-# Models
-# ======
-
-
-# ADDRESS
-class Address(BaseTag, BaseTimestamp):
-    """Address model."""
-
-    address_line_1 = models.CharField(max_length=255)
-    address_line_2 = models.CharField(max_length=255, blank=True, null=True)
-    city = models.CharField(max_length=100)
-    state = models.CharField(max_length=100, blank=True, null=True)
-    country = models.CharField(max_length=100)
-    postal_code = models.CharField(max_length=20, blank=True, null=True)
-    latitude = models.DecimalField(max_digits=10, decimal_places=7, default=0.0)
-    longitude = models.DecimalField(max_digits=10, decimal_places=7, default=0.0)
-
-    class Meta:
-        db_table = "addresses"
-
-    def __str__(self):
-        return f"{self.address_line_1}, {self.city}, {self.state}, {self.country}"
-
-
-# LANGUAGE
-class Language(BaseTag):
-    """Language model."""
-
-    language_id = models.BigAutoField(primary_key=True)
-    name = models.CharField(max_length=100, unique=True, help_text="Language name")
-
-    class Meta:
-        db_table = "languages"
-
-    def __str__(self):
-        return self.name
-
-
-# TAG
-class Tag(models.Model):
-    """Tag model."""
-
-    name = models.CharField(
-        max_length=100,
-        help_text="Name for the tag.",
-    )
-
-    # Associate the tag with the user who created it
-    created_by = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.SET_NULL,
-        null=True,
-        help_text="User who created this tag.",
-    )
-
-    class Meta:
-        db_table = "tags"
-
-    def __str__(self):
-        return self.name
 
 
 # ====
@@ -279,7 +256,11 @@ class User(AbstractBaseUser, PermissionsMixin, BaseTag):
         return self.email
 
 
+# ====
 # ROLE
+# ====
+
+
 class Role(BaseTag):
     """User roles model."""
 
@@ -316,7 +297,206 @@ class Role(BaseTag):
         return self.name
 
 
+# =========
+# USER ROLE
+# =========
+
+
+class UserRole(BaseActivity):
+    """
+    User role juction model with 1:1 relationship between user, role and profile.
+    """
+
+    user = models.ForeignKey(
+        "User",
+        on_delete=models.CASCADE,
+        db_column="user_id",
+        related_name="role_assignments",
+    )
+    role = models.ForeignKey(
+        "Role",
+        on_delete=models.CASCADE,
+        db_column="role_id",
+        related_name="role_assignments",
+    )
+    profile = models.OneToOneField(
+        "Profile",
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        db_column="profile_id",
+        related_name="user_role",
+    )
+
+    class Meta:
+        db_table = "user_roles"
+        constraints = [
+            models.UniqueConstraint(
+                fields=["user", "role"],
+                name="unique_user_role_assignment",
+            )
+        ]
+
+    def save(self, *args, **kwargs):
+        """Auto-create profile when role is assigned"""
+        if not self.profile:
+            self.profile = Profile.objects.create(role_assignment=self)
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"{self.user.email} -> {self.role.name}"
+
+
+# =======
+# PROFILE
+# =======
+
+
+class Profile(BaseTag):
+    """User profile model."""
+
+    profile_id = models.BigAutoField(primary_key=True)
+    role_assignment = models.OneToOneField(
+        "UserRole",
+        on_delete=models.CASCADE,
+        related_name="profile_link",
+    )
+    organization = models.ForeignKey(
+        "Organization",
+        on_delete=models.SET_NULL,
+        blank=True,
+        null=True,
+        related_name="members",
+        help_text="The organization this user (profile) is affiliated with.",
+    )
+    phone_number = models.CharField(max_length=50, blank=True, null=True)
+    mobile_phone = models.CharField(max_length=50, blank=True, null=True)
+    profile_picture = models.CharField(max_length=255, blank=True, null=True)
+    date_of_birth = models.DateField(blank=True, null=True)
+    languages = models.ManyToManyField(
+        "Language",
+        through="ProfileLanguage",
+        related_name="profiles",
+    )
+    bio = models.TextField(blank=True, null=True)
+    cv = models.CharField(max_length=255, blank=True, null=True)
+    job_title = models.CharField(max_length=100, blank=True, null=True)
+    address = models.OneToOneField(
+        "Address",
+        on_delete=models.CASCADE,
+        db_column="address_id",
+        blank=True,
+        null=True,
+        related_name="profiles",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    @property
+    def user(self):
+        """Access parent user through role assignment"""
+        return self.role_assignment.user
+
+    @property
+    def role(self):
+        """Access role through role assignment"""
+        return self.role_assignment.role
+
+    class Meta:
+        db_table = "profiles"
+
+    def __str__(self):
+        return f"{self.full_name}"
+
+
+# ================
+# PROFILE LANGUAGE
+# ================
+
+
+class ProfileLanguage(models.Model):
+    """Profile language model captures many-to-many relationship between user profiles and languages."""
+
+    class ProficiencyLevels(models.TextChoices):
+        BEGINNER = "beginner", "Beginner"
+        INTERMEDIATE = "intermediate", "Intermediate"
+        ADVANCED = "advanced", "Advanced"
+        FLUENT = "fluent", "Fluent"
+        NATIVE = "native", "Native"
+
+    profile = models.ForeignKey(
+        "Profile",
+        on_delete=models.CASCADE,
+        db_column="profile_id",
+        related_name="profile_languages",
+    )
+    language = models.ForeignKey(
+        "Language",
+        on_delete=models.CASCADE,
+        db_column="language_id",
+        related_name="language_profiles",
+    )
+    proficiency = models.CharField(
+        max_length=20,
+        choices=ProficiencyLevels.choices,
+        default=ProficiencyLevels.FLUENT,
+        help_text="Language proficiency level",
+    )
+
+    class Meta:
+        db_table = "profile_languages"
+
+    def __str__(self):
+        return f"{self.profile.full_name} -> {self.language.name}"
+
+
+# =======
+# ADDRESS
+# =======
+
+
+class Address(BaseTag, BaseTimestamp):
+    """Address model."""
+
+    address_line_1 = models.CharField(max_length=255)
+    address_line_2 = models.CharField(max_length=255, blank=True, null=True)
+    city = models.CharField(max_length=100)
+    state = models.CharField(max_length=100, blank=True, null=True)
+    country = models.CharField(max_length=100)
+    postal_code = models.CharField(max_length=20, blank=True, null=True)
+    latitude = models.DecimalField(max_digits=10, decimal_places=7, default=0.0)
+    longitude = models.DecimalField(max_digits=10, decimal_places=7, default=0.0)
+
+    class Meta:
+        db_table = "addresses"
+
+    def __str__(self):
+        return f"{self.address_line_1}, {self.city}, {self.state}, {self.country}"
+
+
+# ========
+# LANGUAGE
+# ========
+
+
+class Language(BaseTag):
+    """Language model."""
+
+    language_id = models.BigAutoField(primary_key=True)
+    name = models.CharField(max_length=100, unique=True, help_text="Language name")
+
+    class Meta:
+        db_table = "languages"
+
+    def __str__(self):
+        return self.name
+
+
+# ============
 # ORGANIZATION
+# ============
+
+
 class Organization(BaseTag):
     """Organization model."""
 
@@ -365,151 +545,11 @@ class Organization(BaseTag):
         return self.name
 
 
-# PROFILE
-class Profile(BaseTag):
-    """User profile model."""
-
-    profile_id = models.BigAutoField(primary_key=True)
-    role_assignment = models.OneToOneField(
-        "UserRole",
-        on_delete=models.CASCADE,
-        related_name="profile_link",
-    )
-    organization = models.ForeignKey(
-        "Organization",
-        on_delete=models.SET_NULL,
-        blank=True,
-        null=True,
-        related_name="members",
-        help_text="The organization this user (profile) is affiliated with.",
-    )
-    phone_number = models.CharField(max_length=50, blank=True, null=True)
-    mobile_phone = models.CharField(max_length=50, blank=True, null=True)
-    profile_picture = models.CharField(max_length=255, blank=True, null=True)
-    date_of_birth = models.DateField(blank=True, null=True)
-    languages = models.ManyToManyField(
-        "Language",
-        through="ProfileLanguage",
-        related_name="profiles",
-    )
-    bio = models.TextField(blank=True, null=True)
-    cv = models.CharField(max_length=255, blank=True, null=True)
-    job_title = models.CharField(max_length=100, blank=True, null=True)
-    address = models.OneToOneField(
-        Address,
-        on_delete=models.CASCADE,
-        db_column="address_id",
-        blank=True,
-        null=True,
-        related_name="profiles",
-    )
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-    @property
-    def user(self):
-        """Access parent user through role assignment"""
-        return self.role_assignment.user
-
-    @property
-    def role(self):
-        """Access role through role assignment"""
-        return self.role_assignment.role
-
-    class Meta:
-        db_table = "profiles"
-
-    def __str__(self):
-        return f"{self.full_name}"
-
-
-# PROFILE LANGUAGE (Junction Model; tagging not added)
-class ProfileLanguage(models.Model):
-    """Profile language model captures many-to-many relationship between user profiles and languages."""
-
-    class ProficiencyLevels(models.TextChoices):
-        BEGINNER = "beginner", "Beginner"
-        INTERMEDIATE = "intermediate", "Intermediate"
-        ADVANCED = "advanced", "Advanced"
-        FLUENT = "fluent", "Fluent"
-        NATIVE = "native", "Native"
-
-    profile = models.ForeignKey(
-        "Profile",
-        on_delete=models.CASCADE,
-        db_column="profile_id",
-        related_name="profile_languages",
-    )
-    language = models.ForeignKey(
-        "Language",
-        on_delete=models.CASCADE,
-        db_column="language_id",
-        related_name="language_profiles",
-    )
-    proficiency = models.CharField(
-        max_length=20,
-        choices=ProficiencyLevels.choices,
-        default=ProficiencyLevels.FLUENT,
-        help_text="Language proficiency level",
-    )
-
-    class Meta:
-        db_table = "profile_languages"
-
-    def __str__(self):
-        return f"{self.profile.full_name} -> {self.language.name}"
-
-
-# USER ROLE
-class UserRole(BaseActivity):
-    """
-    User role juction model with 1:1 relationship between user, role and profile.
-    """
-
-    user = models.ForeignKey(
-        "User",
-        on_delete=models.CASCADE,
-        db_column="user_id",
-        related_name="role_assignments",
-    )
-    role = models.ForeignKey(
-        "Role",
-        on_delete=models.CASCADE,
-        db_column="role_id",
-        related_name="role_assignments",
-    )
-    profile = models.OneToOneField(
-        "Profile",
-        on_delete=models.CASCADE,
-        null=True,
-        blank=True,
-        db_column="profile_id",
-        related_name="user_role",
-    )
-
-    class Meta:
-        db_table = "user_roles"
-        constraints = [
-            models.UniqueConstraint(
-                fields=["user", "role"],
-                name="unique_user_role_assignment",
-            )
-        ]
-
-    def save(self, *args, **kwargs):
-        """Auto-create profile when role is assigned"""
-        if not self.profile:
-            self.profile = Profile.objects.create(
-                first_name=self.user.email.split("@")[0],
-                last_name="",
-            )
-        super().save(*args, **kwargs)
-
-    def __str__(self):
-        return f"{self.user.email} -> {self.role.name}"
-
-
+# =========
 # APPLIANCE
+# =========
+
+
 class Appliance(BaseTag):
     """Appliance model."""
 
@@ -551,7 +591,11 @@ class Appliance(BaseTag):
         return self.name
 
 
+# ========
 # PROPERTY
+# ========
+
+
 class Property(BaseTag):
     """Property model representing a real estate property."""
 
@@ -689,7 +733,11 @@ class Property(BaseTag):
         return self.title
 
 
+# ==============
 # PROPERTY PHOTO
+# ==============
+
+
 class PropertyPhoto(BaseTag):
     """Property photo model."""
 
@@ -711,7 +759,11 @@ class PropertyPhoto(BaseTag):
         return f"{self.property.title} -> Photo {self.photo_id}"
 
 
+# =======
 # AMENITY
+# =======
+
+
 class Amenity(BaseTag):
     """Amenity model."""
 
@@ -734,7 +786,11 @@ class Amenity(BaseTag):
         return self.name
 
 
-# PROPERTY AMENITY (Junction Model; tagging not added)
+# ================
+# PROPERTY AMENITY
+# ================
+
+
 class PropertyAmenity(models.Model):
     """Property amenity model captures many-to-many relationship between properties and amenities."""
 
@@ -809,7 +865,11 @@ class OpenHouse(BaseActivity, BaseTag):
         return f"OpenHouse {self.property.title} - {self.date}"
 
 
-# OPENHOUSE AGENT (Junction Model; tagging not added)
+# ===============
+# OPENHOUSE AGENT
+# ===============
+
+
 class OpenHouseAgent(models.Model):
     """Open house agent model captures many-to-many relationship between openhouses and agent users."""
 
@@ -837,7 +897,11 @@ class OpenHouseAgent(models.Model):
         return f"{self.openhouse.openhouse_id} - {self.status}"
 
 
+# =======
 # BOOKING
+# =======
+
+
 class Booking(BaseTag):
     """Booking model."""
 
@@ -862,7 +926,11 @@ class Booking(BaseTag):
         return f"Booking {self.booking_id} for {self.property.title}"
 
 
+# =======
 # PAYMENT
+# =======
+
+
 class Payment(BaseTag):
     """Payment model."""
 
@@ -883,7 +951,11 @@ class Payment(BaseTag):
         return f"Payment {self.payment_id} for Booking {self.booking.booking_id}"
 
 
+# ===============
 # BLOCKCHAINEVENT
+# ===============
+
+
 class BlockchainEvent(models.Model):
     property = models.ForeignKey(Property, on_delete=models.CASCADE)
     tx_hash = models.CharField(max_length=66)  # Blockchain transaction hash
@@ -891,7 +963,11 @@ class BlockchainEvent(models.Model):
     timestamp = models.DateTimeField()
 
 
+# ======
 # REVIEW
+# ======
+
+
 class Review(BaseTag):
     """Review model."""
 
@@ -915,7 +991,11 @@ class Review(BaseTag):
         return f"Review {self.review_id} - Rating: {self.rating}"
 
 
+# ========
 # FAVORITE
+# ========
+
+
 class Favorite(BaseTag):
     """Favorite model."""
 
@@ -933,7 +1013,11 @@ class Favorite(BaseTag):
         return f"Favorite {self.favorite_id} by {self.user.email}"
 
 
+# =======
 # MESSAGE
+# =======
+
+
 class Message(BaseTag):
     """Message model."""
 
@@ -960,7 +1044,11 @@ class Message(BaseTag):
         return f"Message {self.message_id} from {self.sender.email} to {self.receiver.email}"
 
 
+# ============
 # NOTIFICATION
+# ============
+
+
 class Notification(BaseTag):
     """Notification model."""
 

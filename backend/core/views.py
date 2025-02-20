@@ -11,6 +11,7 @@ from rest_framework import filters, generics, viewsets
 from rest_framework.decorators import api_view
 from rest_framework.permissions import AllowAny, IsAdminUser, IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.throttling import ScopedRateThrottle
 from rest_framework.views import APIView
 
 from core.filters import InStockFilterBackend, OrderFilter, ProductFilter
@@ -24,6 +25,8 @@ from core.serializers import (
 
 
 class ProductListCreateAPIView(generics.ListCreateAPIView):
+    throttle_scope = "products"
+    throttle_classes = [ScopedRateThrottle]
     queryset = Product.objects.order_by("pk")
     serializer_class = ProductSerializer
     filterset_class = ProductFilter
@@ -73,6 +76,7 @@ class ProductDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
 
 
 class OrderViewSet(viewsets.ModelViewSet):
+    throttle_scope = "orders"
     queryset = Order.objects.prefetch_related("items", "items__product").all()
     serializer_class = OrderSerializer
     permission_classes = [IsAuthenticated]

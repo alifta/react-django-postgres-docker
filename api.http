@@ -1,7 +1,9 @@
 GET http://localhost:8000/ HTTP/1.1
 Content-Type: application/json
 
-###
+## Token
+
+### 1. Admin
 POST http://localhost:8000/api/token/ HTTP/1.1
 Content-Type: application/json
 
@@ -10,17 +12,17 @@ Content-Type: application/json
   "password": "password123"
 }
 
-###
+### 2. User
 
 POST http://localhost:8000/api/token/ HTTP/1.1
 Content-Type: application/json
 
 {
-  "email": "test@example.com",
+  "email": "user@example.com",
   "password": "password123"
 }
 
-###
+### 3. Refresh
 
 POST http://localhost:8000/api/token/refresh/ HTTP/1.1
 Content-Type: application/json
@@ -29,7 +31,22 @@ Content-Type: application/json
   "refresh": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsImV4cCI6MTczNDg5MDA5OCwiaWF0IjoxNzM0ODAzNjk4LCJqdGkiOiI0NzA1MTI5YWExOWI0OWU0ODYxYTZjMWMyNDVhYmMxOSIsInVzZXJfaWQiOjJ9.-3Dp755seB650FDFvuPX4T6sAoZ4VwAfJP2nNPRBBMI"
 }
 
-###
+## Users
+
+### Create new user
+
+POST http://localhost:8000/api/user/create/ HTTP/1.1
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzM5OTU3MzM3LCJpYXQiOjE3Mzk5NTM3MzcsImp0aSI6IjVhYWI3MTFmYTRjZTQwNzE5MDM1NTkyMzNkMTIwYmFiIiwidXNlcl9pZCI6MX0.ZzpzUicablzCUpH7fuTij1wXn3QsxDpVxHSWDVxcfls
+
+{
+  "email": "user@example.com",
+  "password": "password123"
+}
+
+## Products
+
+### List products
 
 GET http://localhost:8000/api/products/ HTTP/1.1
 
