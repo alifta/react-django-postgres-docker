@@ -39,6 +39,12 @@ class UserAdmin(BaseUserAdmin):
     )
 
 
+@admin.register(models.UserRole)
+class UserRoleAdmin(admin.ModelAdmin):
+    list_display = ("user", "role", "profile")
+    search_fields = ("user__email", "role")
+
+
 class OrderItemInline(admin.TabularInline):
     model = models.OrderItem
 
@@ -50,13 +56,11 @@ class OrderAdmin(admin.ModelAdmin):
 # User
 admin.site.register(models.User, UserAdmin)
 
-# Home In Block
 admin.site.register(models.Property)
 
-# testing 1
 admin.site.register(models.Order, OrderAdmin)
 admin.site.register(models.Product)
-# testing 2
+
 admin.site.register(models.Recipe)
-admin.site.register(models.GenericTag)
+admin.site.register(models.Tag)
 admin.site.register(models.Ingredient)

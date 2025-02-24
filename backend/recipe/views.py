@@ -14,7 +14,7 @@ from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from core.models import GenericTag, Ingredient, Recipe
+from core.models import Tag, Ingredient, Recipe
 from recipe import serializers
 
 
@@ -125,7 +125,7 @@ class BaseRecipeAttrViewSet(
 class TagViewSet(BaseRecipeAttrViewSet):
     """Manage tags in the database."""
 
-    queryset = GenericTag.objects.all()
+    queryset = Tag.objects.all()
     serializer_class = serializers.TagSerializer
 
 

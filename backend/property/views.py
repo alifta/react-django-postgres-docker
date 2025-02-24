@@ -14,7 +14,7 @@ from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from core.models import Property, Amenity, PropertyPhoto
+from core.models import Amenity, Property, PropertyPhoto
 from property import serializers
 
 

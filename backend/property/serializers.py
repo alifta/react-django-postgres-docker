@@ -3,7 +3,8 @@ Serializers for the property API.
 """
 
 from rest_framework import serializers
-from core.models import Property, Address, Appliance, User
+
+from core.models import Address, Appliance, Property, User
 
 
 class AddressSerializer(serializers.ModelSerializer):

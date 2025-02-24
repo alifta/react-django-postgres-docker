@@ -157,6 +157,7 @@ AUTH_USER_MODEL = "core.User"
 
 CORS_ALLOWED_ORIGINS = ["http://localhost:5173"]
 
+# Writes emails to the console
 EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 
 # Django REST Framework settings
@@ -214,7 +215,7 @@ SPECTACULAR_SETTINGS = {
     "COMPONENT_SPLIT_REQUEST": True,
 }
 
-# Redis
+# Redis configuration for caching
 CACHES = {
     "default": {
         "BACKEND": "django_redis.cache.RedisCache",
@@ -225,9 +226,13 @@ CACHES = {
     }
 }
 
-# Celery with Redis as broker and result backend
-CELERY_BROKER_URL = os.environ.get("CELERY_BROKER_URL", "redis://redis:6379/0")
-CELERY_RESULT_BACKEND = os.environ.get("CELERY_RESULT_BACKEND", "redis://redis:6379/0")
+# Celery configuration with Redis as broker and result backend
+CELERY_BROKER_URL = os.environ.get(
+    "CELERY_BROKER_URL", "redis://redis:6379/0"
+)  # Use database 0 for broker
+CELERY_RESULT_BACKEND = os.environ.get(
+    "CELERY_RESULT_BACKEND", "redis://redis:6379/1"
+)  # Use database 1 for results
 CELERY_ACCEPT_CONTENT = ["json"]
 CELERY_TASK_SERIALIZER = "json"
 CELERY_RESULT_SERIALIZER = "json"

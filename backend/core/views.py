@@ -22,6 +22,7 @@ from core.serializers import (
     ProductInfoSerializer,
     ProductSerializer,
 )
+from core.tasks import send_order_confirmation_email
 
 
 class ProductListCreateAPIView(generics.ListCreateAPIView):
@@ -46,7 +47,7 @@ class ProductListCreateAPIView(generics.ListCreateAPIView):
     # pagination_class.max_page_size = 10
     # pagination_class.page_size_query_param = "size"
 
-    @method_decorator(cache_page(60 * 15, key_prefix="product_list"))  # 15 minutes
+    @method_decorator(cache_page(60 * 1, key_prefix="product_list"))  # 1 minutes
     def list(self, request, *args, **kwargs):
         return super().list(request, *args, **kwargs)
 
@@ -84,13 +85,14 @@ class OrderViewSet(viewsets.ModelViewSet):
     filterset_class = OrderFilter
     filter_backends = [DjangoFilterBackend]
 
-    @method_decorator(cache_page(60 * 15, key_prefix="order_list"))
+    @method_decorator(cache_page(60 * 1, key_prefix="order_list"))
     @method_decorator(vary_on_headers("Authorization"))
     def list(self, request, *args, **kwargs):
         return super().list(request, *args, **kwargs)
 
     def perform_create(self, serializer):
-        serializer.save(user=self.request.user)
+        order = serializer.save(user=self.request.user)
+        send_order_confirmation_email.delay(order.order_id, self.request.user.email)
 
     def get_serializer_class(self):
         # if self.request.method == "POST":

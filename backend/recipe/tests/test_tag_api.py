@@ -10,7 +10,7 @@ from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APIClient
 
-from core.models import GenericTag, Recipe
+from core.models import Tag, Recipe
 from recipe.serializers import TagSerializer
 
 TAGS_URL = reverse("recipe:tag-list")
@@ -49,12 +49,12 @@ class PrivateTagsAPITests(TestCase):
 
     def test_retrieve_tags(self):
         """Test retrieving a list of tags."""
-        GenericTag.objects.create(user=self.user, name="Vegan")
-        GenericTag.objects.create(user=self.user, name="Dessert")
+        Tag.objects.create(user=self.user, name="Vegan")
+        Tag.objects.create(user=self.user, name="Dessert")
 
         res = self.client.get(TAGS_URL)
 
-        tags = GenericTag.objects.all().order_by("-name")
+        tags = Tag.objects.all().order_by("-name")
         serializer = TagSerializer(tags, many=True)
 
         self.assertEqual(res.status_code, status.HTTP_200_OK)
@@ -63,19 +63,19 @@ class PrivateTagsAPITests(TestCase):
     def test_tags_limited_to_user(self):
         """Test list of tags is limited to authenticated user."""
         user2 = create_user(email="user2@example.com")
-        GenericTag.objects.create(user=user2, name="Fruity")
-        tag = GenericTag.objects.create(user=self.user, name="Comfort Food")
+        Tag.objects.create(user=user2, name="Fruity")
+        tag = Tag.objects.create(user=self.user, name="Comfort Food")
 
         res = self.client.get(TAGS_URL)
 
         self.assertEqual(res.status_code, status.HTTP_200_OK)
         self.assertEqual(len(res.data["results"]), 1)
         self.assertEqual(res.data["results"][0]["id"], tag.id)
-        self.assertEqual(res.data["results"][0]["name"], tag.name)
+        self.assertEqual(res.data["results"][0]["name"], tag.tag_name)
 
     def test_update_tag(self):
         """Test updating a tag."""
-        tag = GenericTag.objects.create(user=self.user, name="After Dinner")
+        tag = Tag.objects.create(user=self.user, name="After Dinner")
 
         payload = {"name": "Dessert"}
         url = detail_url(tag.id)
@@ -83,23 +83,23 @@ class PrivateTagsAPITests(TestCase):
 
         self.assertEqual(res.status_code, status.HTTP_200_OK)
         tag.refresh_from_db()
-        self.assertEqual(tag.name, payload["name"])
+        self.assertEqual(tag.tag_name, payload["name"])
 
     def test_delete_tag(self):
         """Test deleting a tag."""
-        tag = GenericTag.objects.create(user=self.user, name="Breakfast")
+        tag = Tag.objects.create(user=self.user, name="Breakfast")
 
         url = detail_url(tag.id)
         res = self.client.delete(url)
 
         self.assertEqual(res.status_code, status.HTTP_204_NO_CONTENT)
-        tags = GenericTag.objects.filter(user=self.user)
+        tags = Tag.objects.filter(user=self.user)
         self.assertFalse(tags.exists())
 
     def test_filter_tags_assigned_to_recipe(self):
         """Test listing tags to those assigned to recipes"""
-        tag1 = GenericTag.objects.create(user=self.user, name="Breakfast")
-        tag2 = GenericTag.objects.create(user=self.user, name="Lunch")
+        tag1 = Tag.objects.create(user=self.user, name="Breakfast")
+        tag2 = Tag.objects.create(user=self.user, name="Lunch")
         recipe = Recipe.objects.create(
             title="Green Eggs on Toast",
             time_minutes=10,
@@ -117,8 +117,8 @@ class PrivateTagsAPITests(TestCase):
 
     def test_filter_tags_unique(self):
         """Test filtered tags returns a unique list."""
-        tag = GenericTag.objects.create(user=self.user, name="Breakfast")
-        GenericTag.objects.create(user=self.user, name="Lunch")
+        tag = Tag.objects.create(user=self.user, name="Breakfast")
+        Tag.objects.create(user=self.user, name="Lunch")
         recipe1 = Recipe.objects.create(
             title="Pancakes",
             time_minutes=5,

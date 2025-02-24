@@ -277,3 +277,11 @@ shows logs from Rdius service.
 ```shell
 docker compose run --rm redis sh -c "redis-server --loglevel debug"
 ```
+
+## Celery
+
+### Troubleshoot Celery Worker
+
+```shell
+docker compose run --rm redis sh -c "celery -A backend worker -l info"
+```

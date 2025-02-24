@@ -13,7 +13,7 @@ from PIL import Image
 from rest_framework import status
 from rest_framework.test import APIClient
 
-from core.models import GenericTag, Ingredient, Recipe
+from core.models import Tag, Ingredient, Recipe
 from recipe.serializers import RecipeDetailSerializer, RecipeSerializer
 
 RECIPE_URL = reverse("recipe:recipe-list")
@@ -222,7 +222,7 @@ class PrivateRecipeAPITests(TestCase):
 
     def test_create_recipe_with_existing_tags(self):
         """Test creating a recipe with existing tag."""
-        tag_indian = GenericTag.objects.create(user=self.user, name="Indian")
+        tag_indian = Tag.objects.create(user=self.user, name="Indian")
         payload = {
             "title": "Pongal",
             "time_minutes": 60,
@@ -250,16 +250,16 @@ class PrivateRecipeAPITests(TestCase):
         res = self.client.patch(url, payload, format="json")
 
         self.assertEqual(res.status_code, status.HTTP_200_OK)
-        new_tag = GenericTag.objects.get(user=self.user, name="Lunch")
+        new_tag = Tag.objects.get(user=self.user, name="Lunch")
         self.assertIn(new_tag, recipe.tags.all())
 
     def test_update_recipe_assign_tag(self):
         """Test assigning an existing tag when updating a recipe"""
-        tag_breakfast = GenericTag.objects.create(user=self.user, name="Breakfast")
+        tag_breakfast = Tag.objects.create(user=self.user, name="Breakfast")
         recipe = create_recipe(user=self.user)
         recipe.tags.add(tag_breakfast)
 
-        tag_lunch = GenericTag.objects.create(user=self.user, name="Lunch")
+        tag_lunch = Tag.objects.create(user=self.user, name="Lunch")
         payload = {"tags": [{"name": "Lunch"}]}
         url = detail_url(recipe.id)
         res = self.client.patch(url, payload, format="json")
@@ -270,7 +270,7 @@ class PrivateRecipeAPITests(TestCase):
 
     def test_clear_recipe_tags(self):
         """Test clearing a recipe tags."""
-        tag = GenericTag.objects.create(user=self.user, name="Dessert")
+        tag = Tag.objects.create(user=self.user, name="Dessert")
         recipe = create_recipe(user=self.user)
         recipe.tags.add(tag)
 
@@ -371,8 +371,8 @@ class PrivateRecipeAPITests(TestCase):
         """Test filtering recipes by tags."""
         r1 = create_recipe(user=self.user, title="Thai Vegetable Curry")
         r2 = create_recipe(user=self.user, title="Aubergine with Tahini")
-        tag1 = GenericTag.objects.create(user=self.user, name="Vegan")
-        tag2 = GenericTag.objects.create(user=self.user, name="Vegetarian")
+        tag1 = Tag.objects.create(user=self.user, name="Vegan")
+        tag2 = Tag.objects.create(user=self.user, name="Vegetarian")
         r1.tags.add(tag1)
         r2.tags.add(tag2)
         r3 = create_recipe(user=self.user, title="Fish and chips")

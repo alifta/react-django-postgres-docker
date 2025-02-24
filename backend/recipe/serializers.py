@@ -4,7 +4,7 @@ Serializers for the recipe API.
 
 from rest_framework import serializers
 
-from core.models import GenericTag, Ingredient, Recipe
+from core.models import Tag, Ingredient, Recipe
 
 
 class IngredientSerializer(serializers.ModelSerializer):
@@ -20,7 +20,7 @@ class TagSerializer(serializers.ModelSerializer):
     """Serializer for the tag objects."""
 
     class Meta:
-        model = GenericTag
+        model = Tag
         fields = ["id", "name"]
         read_only_fields = ["id"]
 
@@ -40,7 +40,7 @@ class RecipeSerializer(serializers.ModelSerializer):
         """Handle getting or creating tags as needed."""
         auth_user = self.context["request"].user
         for tag in tags:
-            tag_obj, created = GenericTag.objects.get_or_create(user=auth_user, **tag)
+            tag_obj, created = Tag.objects.get_or_create(user=auth_user, **tag)
             recipe.tags.add(tag_obj)
 
     def _get_or_create_ingredients(self, ingredients, recipe):
