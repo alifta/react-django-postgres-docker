@@ -1,5 +1,17 @@
 # Home In Block
 
+## Dev
+
+### Annotation
+
+```python
+# * Importnant (Green)
+# ! Deprecated (Red)
+# ? Should (Blue)
+# TODO: (Orange)
+
+```
+
 ## Frontend - React
 
 ### Porject setup

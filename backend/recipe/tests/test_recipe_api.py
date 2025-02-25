@@ -13,7 +13,7 @@ from PIL import Image
 from rest_framework import status
 from rest_framework.test import APIClient
 
-from core.models import Tag, Ingredient, Recipe
+from core.models import Ingredient, Recipe, Tag
 from recipe.serializers import RecipeDetailSerializer, RecipeSerializer
 
 RECIPE_URL = reverse("recipe:recipe-list")

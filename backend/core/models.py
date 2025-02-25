@@ -11,9 +11,9 @@ from django.contrib.auth.models import (
     BaseUserManager,
     PermissionsMixin,
 )
-from django.db import models
+from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
 from django.contrib.contenttypes.models import ContentType
-from django.contrib.contenttypes.fields import GenericForeignKey
+from django.db import models
 
 # =======
 # Utility
@@ -131,7 +131,7 @@ class Tag(models.Model):
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         db_column="user_id",
-        related_name="tags",
+        related_name="created_tags",
         help_text="User who created this tag.",
         verbose_name="Created By",
     )
@@ -231,12 +231,9 @@ class User(AbstractBaseUser, PermissionsMixin, Activity):
         verbose_name="Last Name",
     )
     # Many-to-many relationship to tags through the TaggedItem table
-    tags = models.ManyToManyField(
-        "Tag",
-        through="TaggedItem",
-        related_name="users",
-        help_text="Tags associated with the user.",
-        verbose_name="Tags",
+    tags = GenericRelation(
+        TaggedItem,
+        related_query_name="users",
     )
     # Many-to-many relationship to roles through the UsersRoles table
     roles = models.ManyToManyField(
@@ -304,11 +301,7 @@ class User(AbstractBaseUser, PermissionsMixin, Activity):
         return self.email
 
 
-class UserRole(Activity):
-    """
-    Junction model that links a user with a specific role and automatically creates an associated profile. This ensures a one-to-one relationship among the user, the role, and the profile.
-    """
-
+class Role(models.Model):
     class RoleNames(models.TextChoices):
         ADMIN = "admin", "Admin"
         GUEST = "guest", "Guest"
@@ -330,6 +323,27 @@ class UserRole(Activity):
         TENANT = "tenant", "Tenant"
         ADVISOR = "advisor", "Advisor"
 
+    name = models.CharField(
+        max_length=20,
+        choices=RoleNames.choices,
+        default=RoleNames.HOMEOWNER,
+        unique=True,
+        help_text="The name of the role.",
+        verbose_name="Role Name",
+    )
+
+    class Meta:
+        db_table = "roles"
+
+    def __str__(self):
+        return self.name
+
+
+class UserRole(Activity):
+    """
+    Junction model that links a user with a specific role and automatically creates an associated profile. This ensures a one-to-one relationship among the user, the role, and the profile.
+    """
+
     # Link to the user to whom this role is assigned
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -340,13 +354,12 @@ class UserRole(Activity):
         verbose_name="User",
     )
     # Store the role using a CharField with limited choices
-    role = models.CharField(
-        max_length=20,
-        choices=RoleNames.choices,
-        default=RoleNames.HOMEOWNER,
+    role = models.ForeignKey(
+        "Role",
+        on_delete=models.CASCADE,
+        db_column="role_id",
         help_text="The role assigned to the user.",
         verbose_name="Role",
-        db_index=True,
     )
     # One-to-one link to the associated profile
     profile = models.OneToOneField(
@@ -519,7 +532,7 @@ class ProfileLanguage(Timestamp):
 
     profile = models.ForeignKey(
         "Profile",
-        on_delete=models.SET_NULL,
+        on_delete=models.CASCADE,
         db_column="profile_id",
         related_name="profile_languages",
     )
@@ -555,12 +568,9 @@ class Address(Timestamp):
     postal_code = models.CharField(max_length=20, blank=True, null=True)
     latitude = models.DecimalField(max_digits=10, decimal_places=7, default=0.0)
     longitude = models.DecimalField(max_digits=10, decimal_places=7, default=0.0)
-    tags = models.ManyToManyField(
-        "Tag",
-        through="TaggedItem",
-        related_name="users",
-        help_text="Tags associated with the user.",
-        verbose_name="Tags",
+    tags = GenericRelation(
+        TaggedItem,
+        related_query_name="addresses",
     )
 
     class Meta:
@@ -624,12 +634,9 @@ class Organization(Activity):
         null=True,
         help_text="Contact email address for the organization.",
     )
-    tags = models.ManyToManyField(
-        "Tag",
-        through="TaggedItem",
-        related_name="users",
-        help_text="Tags associated with the user.",
-        verbose_name="Tags",
+    tags = GenericRelation(
+        TaggedItem,
+        related_query_name="otganizations",
     )
 
     class Meta:
@@ -669,12 +676,9 @@ class Appliance(Timestamp):
         unique=True,
         help_text="The serial number of the appliance.",
     )
-    tags = models.ManyToManyField(
-        "Tag",
-        through="TaggedItem",
-        related_name="users",
-        help_text="Tags associated with the user.",
-        verbose_name="Tags",
+    tags = GenericRelation(
+        TaggedItem,
+        related_query_name="appliances",
     )
 
     class Meta:
@@ -798,12 +802,9 @@ class Property(Activity):
         null=True,
         help_text="Additional notes or remarks regarding the property.",
     )
-    tags = models.ManyToManyField(
-        "Tag",
-        through="TaggedItem",
-        related_name="users",
-        help_text="Tags associated with the user.",
-        verbose_name="Tags",
+    tags = GenericRelation(
+        TaggedItem,
+        related_query_name="properties",
     )
 
     @property
@@ -840,12 +841,9 @@ class PropertyPhoto(Timestamp):
     )
     photo_url = models.CharField(max_length=255)
     description = models.CharField(max_length=255, blank=True, null=True)
-    tags = models.ManyToManyField(
-        "Tag",
-        through="TaggedItem",
-        related_name="users",
-        help_text="Tags associated with the user.",
-        verbose_name="Tags",
+    tags = GenericRelation(
+        TaggedItem,
+        related_query_name="property_photos",
     )
 
     class Meta:
@@ -867,12 +865,9 @@ class Amenity(Timestamp):
     longitude = models.DecimalField(
         max_digits=10, decimal_places=7, blank=True, null=True
     )
-    tags = models.ManyToManyField(
-        "Tag",
-        through="TaggedItem",
-        related_name="users",
-        help_text="Tags associated with the user.",
-        verbose_name="Tags",
+    tags = GenericRelation(
+        TaggedItem,
+        related_query_name="amenities",
     )
 
     class Meta:
@@ -931,7 +926,10 @@ class OpenHouse(Activity):
         db_column="property_id",
     )
     agents = models.ManyToManyField(
-        User, through="OpenHouseAgent", related_name="openhouses_agent"
+        settings.AUTH_USER_MODEL,
+        through="OpenHouseAgent",
+        through_fields=("openhouse", "agent"),
+        related_name="openhouses",
     )
     date = models.DateTimeField(null=True, blank=True)
     starttime = models.DateTimeField(null=True, blank=True)
@@ -943,12 +941,9 @@ class OpenHouse(Activity):
     notes = models.TextField(null=True, blank=True)
     attendees = models.TextField(null=True, blank=True)
     virtual_url = models.CharField(max_length=255, null=True, blank=True)
-    tags = models.ManyToManyField(
-        "Tag",
-        through="TaggedItem",
-        related_name="users",
-        help_text="Tags associated with the user.",
-        verbose_name="Tags",
+    tags = GenericRelation(
+        TaggedItem,
+        related_query_name="openhouses",
     )
 
     class Meta:
@@ -999,12 +994,9 @@ class Booking(Activity):
     check_out = models.DateField(blank=True, null=True)
     price = models.DecimalField(max_digits=10, decimal_places=2)
     status = models.CharField(max_length=50, default="pending")
-    tags = models.ManyToManyField(
-        "Tag",
-        through="TaggedItem",
-        related_name="users",
-        help_text="Tags associated with the user.",
-        verbose_name="Tags",
+    tags = GenericRelation(
+        TaggedItem,
+        related_query_name="bookings",
     )
 
     class Meta:
@@ -1024,12 +1016,9 @@ class Payment(Activity):
     amount = models.DecimalField(max_digits=10, decimal_places=2)
     method = models.CharField(max_length=50)
     status = models.CharField(max_length=50, default="pending")
-    tags = models.ManyToManyField(
-        "Tag",
-        through="TaggedItem",
-        related_name="users",
-        help_text="Tags associated with the user.",
-        verbose_name="Tags",
+    tags = GenericRelation(
+        TaggedItem,
+        related_query_name="payments",
     )
 
     class Meta:
@@ -1044,12 +1033,9 @@ class BlockchainEvent(Timestamp):
     tx_hash = models.CharField(max_length=66)  # Blockchain transaction hash
     event_type = models.CharField(max_length=20)  # e.g., "NFT_MINT", "PAYMENT"
     timestamp = models.DateTimeField()
-    tags = models.ManyToManyField(
-        "Tag",
-        through="TaggedItem",
-        related_name="users",
-        help_text="Tags associated with the user.",
-        verbose_name="Tags",
+    tags = GenericRelation(
+        TaggedItem,
+        related_query_name="blockchain_events",
     )
 
 
@@ -1067,12 +1053,9 @@ class Review(Activity):
         models.SmallIntegerField()
     )  # Alternatively, models.PositiveSmallIntegerField()
     comment = models.TextField(blank=True, null=True)
-    tags = models.ManyToManyField(
-        "Tag",
-        through="TaggedItem",
-        related_name="users",
-        help_text="Tags associated with the user.",
-        verbose_name="Tags",
+    tags = GenericRelation(
+        TaggedItem,
+        related_query_name="reviews",
     )
 
     class Meta:
@@ -1117,12 +1100,9 @@ class Message(Timestamp):
     content = models.TextField()
     sent_at = models.DateTimeField(auto_now_add=True)
     is_read = models.BooleanField(default=False)
-    tags = models.ManyToManyField(
-        "Tag",
-        through="TaggedItem",
-        related_name="users",
-        help_text="Tags associated with the user.",
-        verbose_name="Tags",
+    tags = GenericRelation(
+        TaggedItem,
+        related_query_name="messages",
     )
 
     class Meta:
@@ -1139,12 +1119,9 @@ class Notification(Timestamp):
     user = models.ForeignKey(User, on_delete=models.CASCADE, db_column="user_id")
     message = models.CharField(max_length=255)
     is_read = models.BooleanField(default=False)
-    tags = models.ManyToManyField(
-        "Tag",
-        through="TaggedItem",
-        related_name="users",
-        help_text="Tags associated with the user.",
-        verbose_name="Tags",
+    tags = GenericRelation(
+        TaggedItem,
+        related_query_name="notifications",
     )
 
     class Meta:
@@ -1162,12 +1139,9 @@ class Product(models.Model):
     price = models.DecimalField(max_digits=10, decimal_places=2)
     stock = models.PositiveIntegerField()
     image = models.ImageField(upload_to="images/", blank=True, null=True)
-    tags = models.ManyToManyField(
-        "Tag",
-        through="TaggedItem",
-        related_name="users",
-        help_text="Tags associated with the user.",
-        verbose_name="Tags",
+    tags = GenericRelation(
+        TaggedItem,
+        related_query_name="products",
     )
 
     @property
@@ -1198,12 +1172,9 @@ class Order(models.Model):
     products = models.ManyToManyField(
         Product, through="OrderItem", related_name="orders"
     )
-    tags = models.ManyToManyField(
-        "Tag",
-        through="TaggedItem",
-        related_name="users",
-        help_text="Tags associated with the user.",
-        verbose_name="Tags",
+    tags = GenericRelation(
+        TaggedItem,
+        related_query_name="orders",
     )
 
     def __str__(self):

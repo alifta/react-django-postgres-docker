@@ -50,6 +50,8 @@ INSTALLED_APPS = [
     "silk",
     "core",
     "user",
+    "property",
+    "tagging",
     "recipe",
 ]
 

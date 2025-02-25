@@ -13,7 +13,7 @@ class AddressSerializer(serializers.ModelSerializer):
     class Meta:
         model = Address
         fields = (
-            "id",
+            "id",  # ? Should this be included in the production version?
             "address_line_1",
             "address_line_2",
             "city",
