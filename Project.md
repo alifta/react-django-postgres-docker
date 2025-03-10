@@ -154,10 +154,222 @@ Allow platform admins to monitor and manage the system.
 -   DELETE /api/admin/projects/{project_id}/
 -   Remove a project if necessary.
 
-# Django
+# AI Prompt
 
-###
+I am working on the following project:
+
+---
+
+# Project Overview
+
+## Name: Home In Block
+
+## Short Summary: A blockchain-integrated web app combining Interior Design Project Management, Social Networking between homeowners and all the actors involved in home renovation, and NFT-based property tracking for interior designers, homeowners, and contractors.
+
+## Core Idea:
+
+-   Mint properties as NFTs to create immutable, timestamped records of design changes and smart contracts to maintain and manage main actions and transactions applicable to a property.
+-   Secondarily, it enables social collaboration (follow, review, message) between designers and homeowners, mainly, and other agents.
+-   Use AI to match designers with projects and crowdfund renovations via blockchain-secured transactions.
+
+## Inspiration:
+
+Combines Asana or Trello (project management), LinkedIn (social networking), OpenSea (NFTs), and Houzz (design inspiration).
+
+# Key Objectives
+
+-   Blockchain Integration
+-   Mint properties as NFTs to track design history and ownership.
+-   Reduce appraisal costs via transparent, auditable property records.
+-   Social Collaboration
+-   Allow designers and homeowners to follow, message, and review each other.
+-   AI-Driven Matching
+-   Suggest designers based on style, budget, and past NFT project data.
+-   Crowdfunding & Payments
+-   Securely fundraise for projects using NFT-backed milestones.
+-   Transparency Dashboards
+-   Real-time project tracking with blockchain-verified updates.
+
+# Key Objectives Explanation
+
+In this app, users are mainly homeowners and interior designers who get connected to each other in a social network format but with some extra benefits to both of these groups if they use our solution, such as connection (follow), message, booking, review, contract, and payments. Homeowners can list their property for re-design or renovation, and interdesigners can check out existing listings, propose to homeowners, and acquire the project. Users can sign up. The platform provides a project management tool for an interior designer who can create tasks, assign them to a team member, and give some extra visibility to homeowners. You can consider. Added on top is an AI system that trains interior designers' portfolios to match the best and compatible interior designers to homeowners for their project and provides the best match project to interior designers so that they know they are a great match and take on a new challenge, but at the end of the day it is homeowner and interior designer to agree on the project. Add comments to the code as much as possible for clarity and to help junior developers understand the code and concept better. In the future, I want to add LGTM stack to my project, Grafana Labs' opinionated observability stack, which includes Loki for logs, Grafana for dashboards and visualization, Tempo for traces, and Mimir for metrics.
+
+# Target Audience
+
+## Primary:
+
+-   Interior designers seeking collaborative projects and reputation building.
+-   Homeowners listing properties for renovation (tech-savvy, blockchain-curious).
+
+## Secondary:
+
+-   Contractors/architects bidding on NFT-linked tasks.
+-   Real estate agents use NFT histories to make accurate property valuations.
+
+# Core Features
+
+-   Project Management
+-   Assign tasks, track budgets, and share visible updates with stakeholders.
+-   Homeowners view real-time spending, task progress, and change logs.
+-   Social Network
+-   Follow users, comment on listings/blog posts, and message collaborators.
+-   Upload property details (photos, floor plans)
+-   Track design changes (e.g., "2023 Kitchen Remodel").
+-   Review designers/contractors post-project.
+-   AI Matching Engine
+-   Analyze homeowner preferences and history to recommend designers.
+-   NFT Property Minting
+-   Crowdfunding Module
+-   Create campaigns tied to NFT properties; release funds via smart contracts.
+-   Dashboard
+
+# Technical Preferences
+
+## Backend:
+
+-   Django in Docker container
+
+## Database:
+
+PostgreSQL (relational data)
+
+## Frontend:
+
+-   Next.js/React.js (TypeScript)
+
+## Blockchain:
+
+-   Ethereum/Polygon for NFTs (low gas fees).
+-   Solidity for smart contracts; IPFS for decentralized file storage.
+
+## AI/ML:
+
+-   Python/TensorFlow for recommendation models
+-   DeepSeek for text analysis and other task automation.
+
+Hosting:
+
+-   AWS EC2 + S3
+
+# Design Guidelines
+
+## UI/UX:
+
+-   Clean, minimalist and modern interface
+-   Interactive timeline showing (blockchain-recorded) design changes and progress in the interior design project.
+-   Dark/light mode toggle and WCAG 2.1 accessibility compliance.
+
+Key Screens:
+
+-   Social Feed (project updates, blog posts, etc.)
+-   Property Gallery (maybe similar to OpenSea NFT)
+-   AI Matching Wizard (sliders for budget/style preferences).
+
+# User Stories/Use Cases
+
+## As a Homeowner:
+
+"I want to list my property for renovation/interior design project, crowdfund for renovation, and hire a designer matched by AI."
+"I need to see a blockchain history of all design changes for insurance purposes."
+
+## As a Designer:
+
+"I want to showcase past projects on my profile and receive AI-matched clients."
+"I need to assign tasks to contractors and release payments via smart contracts."
+
+## As a Contractor:
+
+"I want to bid on tasks and prove my work is completed via updates and notifications."
+
+# Constraints
+
+## Technical:
+
+Blockchain gas fees could slow transaction speeds (mitigate with Polygon or a cheap and fast chain).
+Training AI models require large datasets of historical projects. The project code is saved on the following repository URL:
+https://github.com/alifta/react-django-postgres-docker
+The project is dockerized using counter and docker-compose, where I have set up the backend using Django in one container and Postgres database (in a separate container) and for the frontend, I used Next.js (in a separate container), Redis (in a separate container) for caching and celery in another container.
+
+## Regulatory:
+
+Legal ambiguity around NFT property rights in some regions.
+
+## Budget:
+
+Smart contract audits and IPFS storage costs.
+
+# Deliverables
+
+Web app
+Restful API Endpoints
+REST/GraphQL for social features, AI matching, and blockchain interactions.
+UI Prototypes
+Smart Contracts
+NFT minting, crowdfunding, and payment escrow logic.
+Figma designs for NFT gallery, social feeds, and dashboards.
+Architecture Diagrams
+System flow showing blockchain integration with backend/services.
+
+# Additional Context
+
+## Competitors:
+
+Houzz: Lacks blockchain transparency and AI matching.
+Propy: Uses blockchain for real estate transactions but no design focus.
+
+## Unique Value:
+
+Combines NFT property tracking with interior design collaboration.
+Crowdfunding tied to on-chain milestones reduces payment disputes.
+
+## Inspiration:
+
+Decentraland: Virtual land NFTs repurposed for physical properties.
+Gitcoin: Community-funded projects adapted for design renovations.
+
+## Concept Brainstorming
+
+Property Workflow
+Designer submits renovation proposals
+Homeowner mints property NFT with metadata (location, size, photos).
+After crowdfunding, smart contracts release payments at milestones (e.g., "Flooring Installed").
+Final design is added to the NFT's history, accessible to future buyers/appraisers.
+AI Matching Engine
+
+## Data Inputs:
+
+Homeowner's style preferences (e.g., "mid-century modern").
+Designer's NFT project history and ratings.
+Budget range and location.
+
+## Output:
+
+Ranked designer list with compatibility scores.
+
+## Social Features
+
+Designers post "Project Stories" to attract followers.
+Homeowners share crowdfunding campaigns on social feeds (integrated with Twitter/Instagram).
+
+# Output Format:
+
+-   Present the directory structure as a tree view (in bash format).
+-   For each file, output the complete content with the filename as a header. Example Format:
+    Directory Tree View
+    Complete code for {example}.py
+
+# Fina thoughts:
+
+I expect to complete the project in 6 months. Please help me with my start-up idea. My life's goals and success depend on it.
+
+---
+
+I will request your assistance with coding for this project in my upcoming prompts. Thank you!
+
+In my Django project, I have a main app called core, which includes all the database models in the models.py file:
 
 ```python
-python -c "import secrets; import string; print(''.join(secrets.choice(string.ascii_letters + string.digits + string.punctuation) for _ in range(50)))"
+
 ```
+
+can you make sure to add comments to the code as much as you can to help junior programmers on the team and make sure that fields has help text and verbose text and imrove each class as much as you can

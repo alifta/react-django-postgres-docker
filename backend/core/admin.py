@@ -62,5 +62,6 @@ admin.site.register(models.Order, OrderAdmin)
 admin.site.register(models.Product)
 
 admin.site.register(models.Recipe)
-admin.site.register(models.Tag)
+admin.site.register(models.TaggedItem)
 admin.site.register(models.Ingredient)
+admin.site.register(models.Contact)

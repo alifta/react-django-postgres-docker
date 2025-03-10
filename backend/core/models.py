@@ -118,15 +118,42 @@ class Timestamp(models.Model):
         ]
 
 
-class Tag(models.Model):
-    """Tag model."""
+# class Tag(models.Model):
+#     """Tag model."""
 
-    tag_name = models.CharField(
-        max_length=100,
-        help_text="Name for the tag.",
-        verbose_name="Tag Name",
-    )
+#     tag_name = models.CharField(
+#         max_length=100,
+#         help_text="Name for the tag.",
+#         verbose_name="Tag Name",
+#     )
 
+#     user = models.ForeignKey(
+#         settings.AUTH_USER_MODEL,
+#         on_delete=models.CASCADE,
+#         db_column="user_id",
+#         related_name="created_tags",
+#         help_text="User who created this tag.",
+#         verbose_name="Created By",
+#     )
+
+#     class Meta:
+#         db_table = "tags"
+#         ordering = ["tag_name"]
+#         verbose_name = "Tag"
+#         verbose_name_plural = "Tags"
+#         indexes = [
+#             models.Index(fields=["tag_name"]),
+#         ]
+
+
+class TaggedItem(models.Model):
+    """Through model for managing many-to-many relationships with tags."""
+
+    # tag = models.ForeignKey("Tag", on_delete=models.CASCADE)
+    tag = models.SlugField()
+    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
+    object_id = models.PositiveIntegerField()
+    content_object = GenericForeignKey("content_type", "object_id")
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
@@ -138,32 +165,14 @@ class Tag(models.Model):
 
     class Meta:
         db_table = "tags"
-        ordering = ["tag_name"]
-        verbose_name = "Tag"
-        verbose_name_plural = "Tags"
-        indexes = [
-            models.Index(fields=["tag_name"]),
-        ]
-
-
-class TaggedItem(models.Model):
-    """Through model for managing many-to-many relationships with tags."""
-
-    tag = models.ForeignKey("Tag", on_delete=models.CASCADE)
-    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
-    object_id = models.PositiveIntegerField()
-    content_object = GenericForeignKey("content_type", "object_id")
-
-    class Meta:
-        db_table = "tagged_items"
-        unique_together = ("tag", "content_type", "object_id")
+        unique_together = ("tag", "user", "content_type", "object_id")
         indexes = [
             models.Index(fields=["tag"]),
             models.Index(fields=["content_type", "object_id"]),
         ]
 
     def __str__(self):
-        return f"{self.tag.tag_name} tagged to {self.content_object}"
+        return f"{self.tag} for user {self.user}"
 
 
 class UserManager(BaseUserManager):
@@ -299,6 +308,35 @@ class User(AbstractBaseUser, PermissionsMixin, Activity):
 
     def __str__(self):
         return self.email
+
+
+class Location(Timestamp):
+    """Location model."""
+
+    location_id = models.BigAutoField(primary_key=True)
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        db_column="user_id",
+        related_name="locations",
+        help_text="User associated with this location.",
+        verbose_name="User",
+    )
+    latitude = models.DecimalField(max_digits=10, decimal_places=7, default=0.0)
+    longitude = models.DecimalField(max_digits=10, decimal_places=7, default=0.0)
+    tags = GenericRelation(
+        TaggedItem,
+        related_query_name="locations",
+    )
+
+    class Meta:
+        db_table = "locations"
+        # ordering = ["user"]
+        verbose_name = "Location"
+        verbose_name_plural = "Locations"
+
+    def __str__(self):
+        return f"{self.user.email}"
 
 
 class Role(models.Model):
@@ -1227,6 +1265,57 @@ class Ingredient(models.Model):
 
     name = models.CharField(max_length=255)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return self.name
+
+
+class Contact(models.Model):
+    """Contact model."""
+
+    name = models.CharField(max_length=100)
+    email = models.EmailField(max_length=254)
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="contacts",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = "contacts"
+        unique_together = ("user", "email")
+
+    def __str__(self):
+        return f"{self.name} <{self.email}>"
+
+
+class Restaurant(models.Model):
+    """Restaurant model."""
+
+    name = models.CharField(max_length=100)
+    # address = models.ForeignKey(
+    #     Address,
+    #     on_delete=models.CASCADE,
+    #     db_column="address_id",
+    #     related_name="restaurants",
+    # )
+
+    # phone_number = models.CharField(max_length=20, blank=True, null=True)
+    # email = models.EmailField(max_length=254, blank=True, null=True)
+
+    website = models.URLField(max_length=255, blank=True, null=True)
+    date_opened = models.DateField(blank=True, null=True)
+    latitude = models.FloatField()
+    longitude = models.FloatField()
+
+    # tags = GenericRelation(
+    #     TaggedItem,
+    #     related_query_name="restaurants",
+    # )
+
+    class Meta:
+        db_table = "restaurants"
 
     def __str__(self):
         return self.name

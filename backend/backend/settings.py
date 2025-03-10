@@ -157,6 +157,9 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 AUTH_USER_MODEL = "core.User"
 
+# LOGIN_URL = "rest_framework:login"
+LOGIN_URL = "/admin/"
+
 CORS_ALLOWED_ORIGINS = ["http://localhost:5173"]
 
 # Writes emails to the console
