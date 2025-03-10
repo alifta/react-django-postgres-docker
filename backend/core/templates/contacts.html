@@ -11,7 +11,8 @@
           <path d="m21 21-4.3-4.3"></path>
         </g>
       </svg>
-      <input type="search" class="grow" placeholder="Search" name="search" hx-get="{% url 'contacts-search' %}" hx-trigger="keyup delay:500ms" hx-target="#contacts-list" />
+      <input type="search" class="grow" placeholder="Search" name="search" hx-get="{% url 'contacts-search' %}" hx-trigger="keyup delay:500ms" hx-target="#contacts-list" hx-indicator="#contacts-indicator" hx-on::before-request="document.getElementById('contacts-list').style.opacity = 0.4;" hx-on::after-request="document.getElementById('contacts-list').style.opacity = 1.0;" />
+      {% include 'partials/contacts-spinner.html' %}
     </label>
 
     {% include 'partials/contacts-list.html' %}
