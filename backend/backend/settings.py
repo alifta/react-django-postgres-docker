@@ -27,6 +27,8 @@ SECRET_KEY = os.environ.get("SECRET_KEY", "changeme")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = bool(os.environ.get("DEBUG", 0))
 
+PRODUCTION = bool(os.environ.get("PRODUCTION", 1))
+
 ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "127.0.0.1").split(",")
 # CSRF_TRUSTED_ORIGINS = os.environ.get("CSRF_TRUSTED_ORIGINS", "https://127.0.0.1").split(",")
 

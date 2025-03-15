@@ -17,6 +17,7 @@ from rest_framework.throttling import ScopedRateThrottle
 from rest_framework.views import APIView
 
 from core.filters import InStockFilterBackend, OrderFilter, ProductFilter
+from core.forms import ContactForm
 from core.models import Location, Order, Product
 from core.serializers import (
     LocationSerializer,
@@ -25,7 +26,6 @@ from core.serializers import (
     ProductInfoSerializer,
     ProductSerializer,
 )
-from core.forms import ContactForm
 from core.tasks import send_order_confirmation_email
 
 
