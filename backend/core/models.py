@@ -1288,34 +1288,3 @@ class Contact(models.Model):
 
     def __str__(self):
         return f"{self.name} <{self.email}>"
-
-
-class Restaurant(models.Model):
-    """Restaurant model."""
-
-    name = models.CharField(max_length=100)
-    # address = models.ForeignKey(
-    #     Address,
-    #     on_delete=models.CASCADE,
-    #     db_column="address_id",
-    #     related_name="restaurants",
-    # )
-
-    # phone_number = models.CharField(max_length=20, blank=True, null=True)
-    # email = models.EmailField(max_length=254, blank=True, null=True)
-
-    website = models.URLField(max_length=255, blank=True, null=True)
-    date_opened = models.DateField(blank=True, null=True)
-    latitude = models.FloatField()
-    longitude = models.FloatField()
-
-    # tags = GenericRelation(
-    #     TaggedItem,
-    #     related_query_name="restaurants",
-    # )
-
-    class Meta:
-        db_table = "restaurants"
-
-    def __str__(self):
-        return self.name

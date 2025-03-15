@@ -2,10 +2,9 @@
 Core views for backend.
 """
 
-from django.db.models import Max
-from django.db.models import Q
-from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
+from django.db.models import Max, Q
+from django.shortcuts import render
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
 from django.views.decorators.vary import vary_on_headers
@@ -18,13 +17,13 @@ from rest_framework.throttling import ScopedRateThrottle
 from rest_framework.views import APIView
 
 from core.filters import InStockFilterBackend, OrderFilter, ProductFilter
-from core.models import Order, Product, Location
+from core.models import Location, Order, Product
 from core.serializers import (
+    LocationSerializer,
     OrderCreateSerializer,
     OrderSerializer,
     ProductInfoSerializer,
     ProductSerializer,
-    LocationSerializer,
 )
 from core.forms import ContactForm
 from core.tasks import send_order_confirmation_email

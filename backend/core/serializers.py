@@ -1,7 +1,7 @@
 from django.db import transaction
 from rest_framework import serializers
 
-from .models import Order, OrderItem, Product, Location, User, TaggedItem
+from .models import Location, Order, OrderItem, Product, TaggedItem, User
 
 
 class LocationSerializer(serializers.ModelSerializer):
@@ -42,7 +42,7 @@ class LocationSerializer(serializers.ModelSerializer):
         tags_data = validated_data.pop("tags", [])
         location = Location.objects.create(**validated_data)
         for tag_data in tags_data:
-            tag, created = Tag.objects.get_or_create(**tag_data)
+            tag, created = TaggedItem.objects.get_or_create(**tag_data)
             location.tags.add(tag)
         return location
 
@@ -51,7 +51,7 @@ class LocationSerializer(serializers.ModelSerializer):
         if tags_data is not None:
             instance.tags.clear()
             for tag_data in tags_data:
-                tag, created = Tag.objects.get_or_create(**tag_data)
+                tag, created = TaggedItem.objects.get_or_create(**tag_data)
                 instance.tags.add(tag)
         return super().update(instance, validated_data)
 

@@ -55,6 +55,10 @@ INSTALLED_APPS = [
     "recipe",
 ]
 
+# Add sandbox app in development
+if os.environ.get("PRODUCTION", False) != "True":
+    INSTALLED_APPS.append("sandbox")
+
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",

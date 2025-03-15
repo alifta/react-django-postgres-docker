@@ -57,6 +57,7 @@ services:
       - DB_PASS=localdevpw
       - DEBUG=True
       - ALLOWED_HOSTS=* # For development only
+      - PRODUCTION=False
     depends_on:
       db:
         condition: service_healthy

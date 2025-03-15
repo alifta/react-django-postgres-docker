@@ -46,3 +46,10 @@ if settings.DEBUG:
         settings.MEDIA_URL,
         document_root=settings.MEDIA_ROOT,
     )
+
+if not settings.PRODUCTION:
+    from sandbox import urls as sandbox_urls
+
+    urlpatterns += [
+        path("sandbox/", include("sandbox.urls")),
+    ]
