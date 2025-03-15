@@ -4,6 +4,9 @@
   <div>
     <h1 class="text-4xl text-success mb-4">Contact Manager</h1>
 
+    <button class="btn btn-primary mb-4" onclick="contacts-modal.showModal()">Add New Contact</button>
+    {% include 'partials/contacts-add-modal.html' %}
+
     <label class="input w-full flex items-center gap-2 mb-2">
       <svg class="h-[1em] opacity-50" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
         <g stroke-linejoin="round" stroke-linecap="round" stroke-width="2.5" fill="none" stroke="currentColor">

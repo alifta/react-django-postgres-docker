@@ -26,6 +26,7 @@ from core.serializers import (
     ProductSerializer,
     LocationSerializer,
 )
+from core.forms import ContactForm
 from core.tasks import send_order_confirmation_email
 
 
@@ -173,7 +174,7 @@ def health_check(request):
 @login_required
 def index(request):
     contacts = request.user.contacts.all().order_by("-created_at")
-    context = {"contacts": contacts}
+    context = {"contacts": contacts, "form": ContactForm()}
     return render(request, "contacts.html", context)
 
 
