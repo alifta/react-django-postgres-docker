@@ -27,7 +27,8 @@ SECRET_KEY = os.environ.get("SECRET_KEY", "changeme")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = bool(os.environ.get("DEBUG", 0))
 
-PRODUCTION = bool(os.environ.get("PRODUCTION", 1))
+# PRODUCTION = bool(os.getenv("PRODUCTION", True))
+PRODUCTION = os.getenv("PRODUCTION", "True") == "True"
 
 ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "127.0.0.1").split(",")
 # CSRF_TRUSTED_ORIGINS = os.environ.get("CSRF_TRUSTED_ORIGINS", "https://127.0.0.1").split(",")
@@ -43,6 +44,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "django_extensions",
     "django_filters",
+    "django_vite",
     "corsheaders",
     "rest_framework",
     "rest_framework.authtoken",
@@ -58,7 +60,7 @@ INSTALLED_APPS = [
 ]
 
 # Add sandbox app in development
-if os.environ.get("PRODUCTION", False) != "True":
+if not PRODUCTION:
     INSTALLED_APPS.append("sandbox")
 
 MIDDLEWARE = [
@@ -225,6 +227,14 @@ SPECTACULAR_SETTINGS = {
     # OTHER SETTINGS
     "COMPONENT_SPLIT_REQUEST": True,
 }
+
+# Django debug toolbar settings
+INTERNAL_IPS = [
+    # ...
+    "127.0.0.1",
+    "localhost",
+    # ...
+]
 
 # Redis configuration for caching
 CACHES = {

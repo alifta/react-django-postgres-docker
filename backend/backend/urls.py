@@ -35,8 +35,6 @@ urlpatterns = [
     path("api/user/", include("user.urls")),
     # Recipe
     path("api/recipe/", include("recipe.urls")),
-    # Silk - must be the last URL
-    path("silk/", include("silk.urls", namespace="silk")),
     # Frontend test api
     path("api/hello-world/", backend_views.hello_world, name="hello-world"),
 ]
@@ -46,9 +44,14 @@ if settings.DEBUG:
         settings.MEDIA_URL,
         document_root=settings.MEDIA_ROOT,
     )
+    # urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 
 if not settings.PRODUCTION:
-
-    urlpatterns += [
+    urlpatterns = [
         path("sandbox/", include("sandbox.urls")),
-    ]
+    ] + urlpatterns
+
+# Silk profiler
+urlpatterns += [
+    path("silk/", include("silk.urls", namespace="silk")),
+]

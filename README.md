@@ -118,6 +118,18 @@ docker compose run --rm backend sh -c "python manage.py createsuperuser"
 docker compose run --rm backend sh -c "python manage.py test"
 ```
 
+### Run Django scripts
+
+```shell
+docker compose run --rm backend sh -c "python manage.py runscript orm_script"
+```
+
+### Run Django commands
+
+```shell
+docker compose run --rm backend sh -c "python manage.py create_data"
+```
+
 ## Docker
 
 ### Complite docker

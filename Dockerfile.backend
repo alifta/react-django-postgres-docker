@@ -1,4 +1,5 @@
-FROM python:3.13.0-alpine3.20
+# Stage 1: Build stage
+FROM python:3.13.0-alpine3.20 AS builder
 
 # Add metadata to the Docker image
 LABEL maintainer="homeinblock.com"
@@ -7,42 +8,78 @@ LABEL maintainer="homeinblock.com"
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
 
-# Copy files
-COPY ./requirements.txt /tmp/requirements.txt
-COPY ./requirements.dev.txt /tmp/requirements.dev.txt
-COPY ./scripts /scripts
-COPY ./backend /backend
-
 # Set the working directory
-WORKDIR /backend
+WORKDIR /app
 
-ARG DEV=false
+# Copy files
+# COPY ./requirements.txt /tmp/requirements.txt
+# COPY ./requirements.dev.txt /tmp/requirements.dev.txt
+# COPY ./scripts /scripts
+# COPY ./backend /backend
 
-# Install dependencies
-RUN python -m venv /py && \
-    /py/bin/pip install --upgrade pip && \
+# Copy only requirements files first to leverage Docker cache
+COPY ./requirements.txt ./
+COPY ./requirements.dev.txt ./
+
+# Install production dependencies
+RUN python -m venv /venv && \
+    /venv/bin/pip install --upgrade pip && \
     apk add --update --upgrade --no-cache postgresql-client jpeg-dev && \
-    apk add --update --upgrade --no-cache --virtual .tmp-build-deps \
+    apk add --update --upgrade --no-cache --virtual .build-deps \
     build-base postgresql-dev musl-dev zlib zlib-dev linux-headers && \
-    /py/bin/pip install -r /tmp/requirements.txt && \
-    if [ "$DEV" = "true" ]; \
-    then /py/bin/pip install -r /tmp/requirements.dev.txt; \
-    fi && \
-    rm -rf /tmp && \
-    apk del .tmp-build-deps && \
-    adduser \
+    /venv/bin/pip install -r requirements.txt && \
+    apk del .build-deps
+
+# Install development dependencies if DEV argument is true
+ARG DEV=false
+RUN if [ "$DEV" = "true" ]; then \
+    apk add --update --upgrade --no-cache --virtual .dev-build-deps build-base postgresql-dev musl-dev zlib zlib-dev linux-headers; \
+    /venv/bin/pip install -r requirements.dev.txt; \
+    apk del .dev-build-deps; \
+    fi
+
+# Copy the rest of the application code
+COPY ./scripts /app/scripts
+COPY ./backend /app/backend
+
+# Make scripts executable
+RUN chmod -R +x /app/scripts
+
+# Stage 2: Final runtime image
+FROM python:3.13.0-alpine3.20 AS final
+
+# Add metadata to the Docker image
+LABEL maintainer="homeinblock.com"
+
+# Set environment variables
+ENV PYTHONDONTWRITEBYTECODE 1
+ENV PYTHONUNBUFFERED 1
+
+# Install only necessary runtime dependencies
+RUN apk add --update --upgrade --no-cache postgresql-client jpeg-dev
+
+# Create user and directories
+RUN adduser \
     --disabled-password \
     --no-create-home \
     django-user && \
     mkdir -p /vol/web/media && \
     mkdir -p /vol/web/static && \
     chown -R django-user:django-user /vol && \
-    chmod -R 755 /vol && \
-    chmod -R +x /scripts
+    chmod -R 755 /vol
 
-ENV PATH="/scripts:/py/bin:$PATH"
+# Copy the virtual environment and application code from the builder stage
+COPY --from=builder /venv /venv
+COPY --from=builder /app /app
 
+# Set the working directory
+WORKDIR /app/backend
+
+# Set the user for running the application
 USER django-user
+
+# Set the PATH to include the virtual environment's bin directory
+ENV PATH="/app/scripts:/venv/bin:$PATH"
 
 # Expose the port the app runs on
 EXPOSE 8000

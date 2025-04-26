@@ -21,9 +21,6 @@ urlpatterns = [
         views.LocationDetailAPIView.as_view(),
         name="location-detail",
     ),
-    # HTMX views
-    path("contacts/", views.index, name="index"),
-    path("contacts-search/", views.search_contacts, name="contacts-search"),
 ]
 
 router = DefaultRouter()

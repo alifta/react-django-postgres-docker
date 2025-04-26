@@ -2,9 +2,7 @@
 Core views for backend.
 """
 
-from django.contrib.auth.decorators import login_required
-from django.db.models import Max, Q
-from django.shortcuts import render
+from django.db.models import Max
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
 from django.views.decorators.vary import vary_on_headers
@@ -17,7 +15,6 @@ from rest_framework.throttling import ScopedRateThrottle
 from rest_framework.views import APIView
 
 from core.filters import InStockFilterBackend, OrderFilter, ProductFilter
-from core.forms import ContactForm
 from core.models import Location, Order, Product
 from core.serializers import (
     LocationSerializer,
@@ -165,25 +162,3 @@ class ProductInfoAPIView(APIView):
 def health_check(request):
     """Return successful response for health check."""
     return Response({"healthy": True, "status": "ok"})
-
-
-# VIEWS
-
-
-@login_required
-def index(request):
-    contacts = request.user.contacts.all().order_by("-created_at")
-    context = {"contacts": contacts, "form": ContactForm()}
-    return render(request, "contacts.html", context)
-
-
-@login_required
-def search_contacts(request):
-    import time
-
-    time.sleep(2)
-    query = request.GET.get("search", "")
-    contacts = request.user.contacts.filter(
-        Q(name__icontains=query) | Q(email__icontains=query)
-    )
-    return render(request, "partials/contacts-list.html", {"contacts": contacts})

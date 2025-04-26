@@ -1268,23 +1268,3 @@ class Ingredient(models.Model):
 
     def __str__(self):
         return self.name
-
-
-class Contact(models.Model):
-    """Contact model."""
-
-    name = models.CharField(max_length=100)
-    email = models.EmailField(max_length=254)
-    user = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE,
-        related_name="contacts",
-    )
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    class Meta:
-        db_table = "contacts"
-        unique_together = ("user", "email")
-
-    def __str__(self):
-        return f"{self.name} <{self.email}>"
