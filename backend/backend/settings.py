@@ -47,9 +47,9 @@ INSTALLED_APPS = [
     "django_vite",
     "corsheaders",
     "rest_framework",
-    "rest_framework.authtoken",
     "rest_framework_simplejwt",
     # "rest_framework_simplejwt.token_blacklist",
+    "djoser",
     "drf_spectacular",
     "silk",
     "core",
@@ -216,8 +216,15 @@ SIMPLE_JWT = {
     "ALGORITHM": "HS256",
     "SIGNING_KEY": SECRET_KEY,  # Use a secure signing key
     "AUTH_HEADER_TYPES": ("Bearer",),  # Use "Bearer" for token prefix
+    # "AUTH_HEADER_TYPES": ("JWT",),  # Use "Bearer" for token prefix
     "USER_ID_FIELD": "user_id",  # Custom user ID field
 }
+
+# DJOSER = {
+#     "SERIALIZERS": {
+#         "user": "path.to.CustomUserSerializer",
+#     },
+# }
 
 SPECTACULAR_SETTINGS = {
     "TITLE": "HomeInBlock",

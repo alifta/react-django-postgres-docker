@@ -1,15 +1,35 @@
-## Test
+# Health Test
 
-### Health check
+## Health check
 
 GET http://localhost:8000/api/health-check/ HTTP/1.1
 Content-Type: application/json
 
 
-### Hello world
+## Hello world
 
 GET http://localhost:8000/api/hello-world/ HTTP/1.1
 Content-Type: application/json
+
+# Auth
+
+## Djoser
+
+### User login
+
+POST http://localhost:8000/auth/jwt/create/ HTTP/1.1
+Content-Type: application/json
+
+{
+  "email": "admin@example.com",
+  "password": "password123"
+}
+
+### Me
+
+GET http://localhost:8000/auth/users/me/ HTTP/1.1
+Content-Type: application/json
+Authorization: Bearer <token_here>
 
 ## Token
 
